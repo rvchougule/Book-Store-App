@@ -2,10 +2,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary, deleteInCloudinary } from "../utils/cloudinary.js";
-import jwt from "jsonwebtoken";
 
 import { Book } from "../models/books.model.js";
-import { Review } from "../models/reviews.model.js";
 
 // create book
 const publishBook = asyncHandler(async (req, res) => {
@@ -183,7 +181,7 @@ const updateBookQuantity = asyncHandler(async (req, res) => {});
 const deleteBook = asyncHandler(async (req, res) => {
   const { bookId } = req.params;
 
-  if (!verifyId) {
+  if (!bookId) {
     throw new ApiError(400, "book id is required");
   }
 
@@ -222,31 +220,68 @@ const getBook = asyncHandler(async (req, res) => {
   }
 
   let pipeline = [
+    // Match the specific book by its ID
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(userId),
+        _id: new mongoose.Types.ObjectId(bookId), // Replace bookId with the specific ID
       },
     },
+    // Lookup reviews for the book
     {
       $lookup: {
-        from: "reviews",
-        localField: "_id",
-        foreignField: "book",
-        as: "book_reviews",
+        from: "reviews", // Collection name for reviews
+        localField: "_id", // Book's _id
+        foreignField: "book", // Book field in the review
+        as: "book_reviews", // Output array
       },
     },
+    // Lookup category details for the book
+    {
+      $lookup: {
+        from: "categories", // Collection name for categories
+        localField: "category", // Book's category field
+        foreignField: "_id", // Category's _id
+        as: "category_details", // Output array
+      },
+    },
+    // Add fields for reviews and mapped category names
     {
       $addFields: {
         reviews: "$book_reviews",
+        categories: {
+          $map: {
+            input: "$category_details",
+            as: "category",
+            in: "$$category.name", // Extract name from category
+          },
+        },
+      },
+    },
+    // Clean up the response by removing unnecessary fields if needed
+    {
+      $project: {
+        book_reviews: 0, // Optional: Remove intermediate lookup fields
+        category_details: 0, // Optional: Remove intermediate lookup fields
       },
     },
   ];
 
   try {
+    const options = {
+      page: 1,
+      limit: 1,
+      customLabels: {
+        totalDocs: "totalBooks",
+        docs: "book",
+      },
+    };
     //   TODO :check aggregated values
-    const result = await Book.aggregatePaginate(Book.aggregate(pipeline));
+    const result = await Book.aggregatePaginate(
+      Book.aggregate(pipeline),
+      options
+    );
 
-    if (result?.books?.length === 0) {
+    if (result?.book?.length === 0) {
       return res.status(404).json(new ApiResponse(404, {}, "NO Book found"));
     }
 
@@ -266,7 +301,244 @@ const getBook = asyncHandler(async (req, res) => {
 });
 
 // get books
-const getAllBooks = asyncHandler(async (req, res) => {});
+const getAllBooks = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    query = "",
+    sortBy = "createdAt",
+    sortType = 1,
+  } = req.query;
 
-// get books by catrgory
-const getBooksByCategory = asyncHandler(async (req, res) => {});
+  // Build the match filter for a fuzzy search on the book title or other fields
+  let matchFilter = {
+    $or: [
+      { title: { $regex: query, $options: "i" } }, // Case-insensitive search in the title
+      { author: { $regex: query, $options: "i" } }, // Case-insensitive search in author
+    ],
+  };
+
+  // Define the aggregation pipeline
+  let pipeline = [
+    // Match books based on the query filter
+    {
+      $match: matchFilter,
+    },
+    // Lookup reviews and populate the user for each review
+    {
+      $lookup: {
+        from: "reviews", // Collection for reviews
+        localField: "_id", // Book's _id
+        foreignField: "book", // Book field in reviews
+        as: "book_reviews",
+      },
+    },
+    {
+      $lookup: {
+        from: "users", // Collection for users
+        localField: "book_reviews.user", // User reference in reviews
+        foreignField: "_id",
+        as: "review_users",
+      },
+    },
+    // Lookup categories and populate the category names
+    {
+      $lookup: {
+        from: "categories", // Collection for categories
+        localField: "category", // Book's category field
+        foreignField: "_id", // Category's _id
+        as: "category_details",
+      },
+    },
+    // Add fields for populated data and map ObjectId references to documents
+    {
+      $addFields: {
+        reviews: {
+          $map: {
+            input: "$book_reviews",
+            as: "review",
+            in: {
+              rating: "$$review.rating",
+              comment: "$$review.comment",
+              user: {
+                $arrayElemAt: [
+                  {
+                    $filter: {
+                      input: "$review_users",
+                      as: "user",
+                      cond: { $eq: ["$$user._id", "$$review.user"] },
+                    },
+                  },
+                  0,
+                ],
+              },
+            },
+          },
+        },
+        categories: {
+          $map: {
+            input: "$category_details",
+            as: "category",
+            in: "$$category.name", // Map category ObjectId to category name
+          },
+        },
+      },
+    },
+    // Clean up unnecessary fields
+    {
+      $project: {
+        book_reviews: 0,
+        review_users: 0,
+        category_details: 0,
+      },
+    },
+    // Sort by the specified field and type
+    {
+      $sort: {
+        [sortBy]: Number(sortType), // Use dynamic sorting field and type
+      },
+    },
+  ];
+
+  // Execute the pipeline with pagination
+  try {
+    const options = {
+      page: parseInt(page, 10), // Convert page to integer
+      limit: parseInt(limit, 10), // Convert limit to integer
+      customLabels: {
+        totalDocs: "totalBooks",
+        docs: "books",
+      },
+    };
+
+    const result = await Book.aggregatePaginate(
+      Book.aggregate(pipeline),
+      options
+    );
+
+    if (!result || result?.books?.length === 0) {
+      return res.status(404).json(new ApiResponse(404, {}, "No books found"));
+    }
+
+    return res.status(200).json(new ApiResponse(200, result, "Books Fetched"));
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    return res
+      .status(500)
+      .json(
+        new ApiError(
+          500,
+          {},
+          `Internal server error in book aggregation: ${error.message}`
+        )
+      );
+  }
+});
+
+const getBooksByCategory = asyncHandler(async (req, res) => {
+  const {
+    categoryId,
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortType = 1,
+  } = req.query;
+
+  // Validate the categoryId parameter
+  if (!categoryId) {
+    throw new ApiError(400, "Category ID not provided");
+  }
+
+  // Build the aggregation pipeline
+  const pipeline = [
+    // Match books by the specified categoryId
+    {
+      $match: {
+        category: mongoose.Types.ObjectId(categoryId),
+      },
+    },
+    // Lookup category details to include category name
+    {
+      $lookup: {
+        from: "categories", // Collection name for categories
+        localField: "category", // Book's category field
+        foreignField: "_id", // Category's _id
+        as: "category_details", // Output array
+      },
+    },
+    // Add category names to the book document
+    {
+      $addFields: {
+        categories: {
+          $map: {
+            input: "$category_details",
+            as: "category",
+            in: "$$category.name", // Extract category name
+          },
+        },
+      },
+    },
+    // Clean up unnecessary fields
+    {
+      $project: {
+        category_details: 0, // Remove intermediate lookup data
+      },
+    },
+    // Sort by the specified field and order
+    {
+      $sort: {
+        [sortBy]: Number(sortType), // Dynamic sorting based on query
+      },
+    },
+  ];
+
+  try {
+    // Pagination options
+    const options = {
+      page: parseInt(page, 10), // Convert page to integer
+      limit: parseInt(limit, 10), // Convert limit to integer
+      customLabels: {
+        totalDocs: "totalBooks",
+        docs: "books",
+      },
+    };
+
+    // Execute the pipeline with pagination
+    const result = await Book.aggregatePaginate(
+      Book.aggregate(pipeline),
+      options
+    );
+
+    // Check if books are found
+    if (!result || result.books.length === 0) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, {}, "No books found in this category"));
+    }
+
+    // Return the successful response
+    return res
+      .status(200)
+      .json(new ApiResponse(200, result, "Books fetched by category"));
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    return res
+      .status(500)
+      .json(
+        new ApiError(
+          500,
+          {},
+          `Internal server error in fetching books by category: ${error.message}`
+        )
+      );
+  }
+});
+
+export {
+  publishBook,
+  updateBook,
+  deleteBook,
+  getBook,
+  getAllBooks,
+  getBooksByCategory,
+};

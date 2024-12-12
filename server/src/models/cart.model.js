@@ -1,3 +1,5 @@
+import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 const cartSchema = new Schema(
   {
     user: {
@@ -25,4 +27,5 @@ const cartSchema = new Schema(
   }
 );
 
+cartSchema.plugin(mongooseAggregatePaginate);
 export const Cart = mongoose.model("Cart", cartSchema);
