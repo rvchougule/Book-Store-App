@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary, deleteInCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
-import { User } from "../models/users.model.js";
+import { Admin as User } from "../models/admin.model.js";
 
 const generateAccessTokenRefreshToken = async (userId) => {
   const user = await User.findById(userId);

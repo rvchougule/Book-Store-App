@@ -8,7 +8,7 @@ const booksSchema = new Schema({
     trim: true,
   },
   author: {
-    type: String,
+    type: [String],
     required: [true, "Author name must be provided"],
     trim: true,
   },
@@ -40,10 +40,19 @@ const booksSchema = new Schema({
     type: String,
     required: false,
   },
+  thumbnail: {
+    type: String,
+    required: true,
+  },
   availableCopies: {
     type: Number,
     default: 1, // Default to 1 copy available
     min: [0, "Available copies cannot be negative"],
+  },
+  category: {
+    type: [Schema.Types.ObjectId],
+    ref: "Category",
+    required: true,
   },
 });
 
