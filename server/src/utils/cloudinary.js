@@ -3,50 +3,42 @@ import fs from "fs";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: CLOUDINARY_API_KEY,
-  api_secret: CLOUDINARY_API_SECRET,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+// Upload a file to cloudinary
+const uploadOnCloudinary = async (localFilePath, path = "img") => {
   try {
+    //check whether the file exists
     if (!localFilePath) return null;
-    console.log("Cloudinary upload start");
-
-    // upload the file on cloudinary
+    // Upload a file
     const response = await cloudinary.uploader.upload(localFilePath, {
+      asset_folder: path,
       resource_type: "auto",
     });
-
-    // File has been uploaded successfully
-    console.log("File has been uploaded successfully", response.url);
-
-    fs.unlinkSync(localFilePath);
-    return response;
+    // file uploaded successfully
+    // console.log("File uploaded successfully on cloudinary", response);
+    fs.unlinkSync(localFilePath); // remove the file from the local storage
+    return response; // return the response which contian the url of the uploaded file
   } catch (error) {
-    console.log("Cloudianry upload failed", err);
-    fs.unlinkSync(localFilePath);
+    fs.unlinkSync(localFilePath); // remove the file from the local storage and it must be done before throwing the error
+    return null;
   }
 };
 
-const deleteInCloudinary = async (fileUrl) => {
+const deleteInCloudinary = async (cloudinaryFilePath) => {
   try {
-    if (!fileUrl) return null;
+    if (!cloudinaryFilePath) return null;
 
-    const publicId = extractPublicId(fileUrl);
-    if (!publicId) return null;
+    const avatarPublicId = cloudinaryFilePath.split("/").pop().split(".")[0];
 
-    let resourceType = "image";
-    if (fileUrl.match(/\.(mp4|mkv|mov|avi)$/)) {
-      resourceType = "video";
-    } else if (fileUrl.match(/\.(mp3|wav)$/)) {
-      resourceType = "raw"; // For audio or other file types
-    }
+    const response = await cloudinary.uploader.destroy(`${avatarPublicId}`);
 
-    const res = await cloudinary.uploader.destroy(publicId, {
-      resource_type: resourceType,
-    });
-    return res;
-  } catch (err) {
+    console.log("Cloudinary delete response:", response);
+    return response;
+  } catch (error) {
+    console.error("Error deleting file from Cloudinary:", error);
     return null;
   }
 };

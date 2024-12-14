@@ -32,7 +32,8 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiError(409, "User with username and email already exists");
   }
-  const avatarLocalPath = req.files?.avatar?.[0].path;
+
+  const avatarLocalPath = req.file?.path;
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
@@ -80,7 +81,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "User not found");
   }
 
-  const isPasswordValid = await user.isPasswordValid(password);
+  const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials");
@@ -117,7 +118,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logout = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
-    re.user._id,
+    req.user._id,
     {
       $unset: {
         refreshToken: 1,

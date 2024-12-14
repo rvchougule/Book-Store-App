@@ -8,7 +8,7 @@ import {
   getAllBooks,
   getBooksByCategory,
 } from "../controllers/books.controller.js";
-import { upload } from "../middlewares/multer.middleware.js";
+import { upload } from "../middlewares/multer.middelware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
