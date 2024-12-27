@@ -23,6 +23,7 @@ import bookRouter from "./routers/books.routers.js";
 import categoryRouter from "./routers/category.routers.js";
 import cartRouter from "./routers/cart.routers.js";
 import reviewRouter from "./routers/reviews.routers.js";
+import { ApiError } from "./utils/ApiError.js";
 // routes declaration
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/admin", adminRouter);
@@ -30,6 +31,19 @@ app.use("/api/v1/books", bookRouter);
 app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/review", reviewRouter);
+
+app.use((err, req, res, next) => {
+  if (err instanceof ApiError) {
+    err.status = err.status || "error";
+    res.status(err.statusCode).json({
+      statusCode: err.statusCode,
+      message: err.message,
+      data: err.data,
+      errors: err.errors,
+      success: err.success,
+    });
+  }
+});
 
 // http://localhost:8000/api/v1/users/register
 export { app };

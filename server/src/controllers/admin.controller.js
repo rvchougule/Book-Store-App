@@ -30,7 +30,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(409, "User with username and email already exists");
+    throw new ApiError(400, "User with username and email already exists");
   }
 
   const avatarLocalPath = req.file?.path;
@@ -145,6 +145,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
 
+  console.log(incomingRefreshToken);
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized request");
   }
