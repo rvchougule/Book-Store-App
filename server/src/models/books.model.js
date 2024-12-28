@@ -28,7 +28,7 @@ const booksSchema = new Schema({
   pages: {
     type: Number,
   },
-  language: {
+  languages: {
     type: [String], // Array of strings
     default: ["English"], // Default to English if no languages are provided
   },

@@ -14,6 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 import AddItems from "./components/AddItems";
 import ListItems from "./components/ListItems";
 import Orders from "./components/Orders";
+import Category from "./components/category/Category";
 
 function App() {
   const { accessToken } = useAuthContext();
@@ -41,6 +42,10 @@ function App() {
             {
               path: "/orders",
               element: <Orders />,
+            },
+            {
+              path: "/category",
+              element: <Category />,
             },
           ],
         },

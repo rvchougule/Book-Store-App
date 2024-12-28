@@ -5,7 +5,7 @@ import SideBar from "../components/SideBar";
 function Home() {
   return (
     <>
-      <main className="h-[100vh] flex items-start  bg-[#45237214]">
+      <main className="h-[100vh] flex flex-col sm:flex-row  items-start overflow-hidden bg-[#45237214]">
         <SideBar />
         <Outlet />
       </main>

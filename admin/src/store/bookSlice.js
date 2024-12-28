@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const auth = createApi({
+export const book = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_URL,
     prepareHeaders: (headers) => {
@@ -15,32 +15,35 @@ export const auth = createApi({
     },
   }),
   endpoints: (builder) => ({
-    signUp: builder.mutation({
-      query: (user) => ({
-        url: "/admin/register",
+    addBook: builder.mutation({
+      query: (book) => ({
+        url: "/books/publish-book",
         method: "POST",
-        body: user,
+        body: book,
         timeout: 5000,
       }),
     }),
-    login: builder.mutation({
-      query: (user) => ({
-        url: "/admin/login",
-        method: "POST",
-        body: user,
+    updateBook: builder.mutation({
+      query: (book) => ({
+        url: "/books/:bookId",
+        method: "PATCH",
+        body: book,
         timeout: 5000,
       }),
     }),
-    refreshToken: builder.mutation({
-      query: (refreshToken) => ({
-        url: "/admin/refresh-token",
-        method: "POST",
-        body: refreshToken,
+    deleteBook: builder.mutation({
+      query: (book) => ({
+        url: "/books/:bookId",
+        method: "DELETE",
+        body: book,
         timeout: 5000,
       }),
     }),
   }),
 });
 
-export const { useSignUpMutation, useLoginMutation, useRefreshTokenMutation } =
-  auth;
+export const {
+  useAddBookMutation,
+  useDeleteBookMutation,
+  useUpdateBookMutation,
+} = book;

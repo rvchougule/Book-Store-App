@@ -1,5 +1,8 @@
+import { toast } from "react-toastify";
 import uploadIcon from "../assets/upload_icon.png";
 import { useState } from "react";
+import * as Yup from "yup";
+import { useAddBookMutation } from "../store/bookSlice";
 
 const bookCategories = [
   "Fiction",
@@ -24,225 +27,363 @@ const bookCategories = [
   "Sports & Outdoors",
 ];
 
+const fields = {
+  title: "",
+  thumbnail: "",
+  decription: "",
+  author: "",
+  category: "",
+  publisher: "",
+  languages: "",
+  genre: "",
+  publishedDate: "",
+  isbn: undefined,
+  availableCopies: undefined,
+  pages: undefined,
+};
+
 export default function AddItems() {
-  // const [thumbnail, setThumbnail] = useState(null);
+  const [thumbnail, setThumbnail] = useState(null);
 
-  // const [formData, setFormData] = useState({
-  //   fullName: "",
-  //   username: "",
-  //   email: "",
-  //   password: "",
-  //   avatar: "",
-  // });
+  const [formData, setFormData] = useState({ ...fields });
 
-  // const [errors, setErrors] = useState({
-  //   fullName: "",
-  //   username: "",
-  //   email: "",
-  //   password: "",
-  //   avatar: "",
-  // });
+  const [errors, setErrors] = useState({ ...fields });
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const file = e.target.files?.[0];
+  const [addBook] = useAddBookMutation();
 
-  //   setErrors({
-  //     fullName: "",
-  //     username: "",
-  //     email: "",
-  //     password: "",
-  //     avatar: "",
-  //   });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const file = e.target.files?.[0];
 
-  //   if (file) {
-  //     console.log(file);
-  //     setFormData((prevState) => ({ ...prevState, [name]: file }));
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       setAvatar(e.target.result);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   } else {
-  //     setFormData((prevState) => ({ ...prevState, [name]: value }));
-  //   }
-  // };
+    setErrors({ ...fields });
+
+    if (file) {
+      setFormData((prevState) => ({ ...prevState, [name]: file }));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnail(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFormData((prevState) => ({ ...prevState, [name]: value }));
+    }
+  };
+
+  const bookSchema = Yup.object().shape({
+    title: Yup.string().required("Title is required"),
+    thumbnail: Yup.mixed()
+      .required("Thumbnail is required")
+      .test(
+        "is-file",
+        "Thumbnail is required",
+        (value) => value instanceof File
+      )
+      .test("file-type", "Only image files are allowed", (value) =>
+        value
+          ? ["image/jpeg", "image/png", "image/gif"].includes(value.type)
+          : false
+      )
+      .test("file-size", "File size must be less than 2MB", (value) =>
+        value ? value.size <= 2 * 1024 * 1024 : false
+      ),
+
+    description: Yup.string().required("Description is required"),
+    author: Yup.string().required("Author is required"),
+    category: Yup.string().required("Category is required"),
+    publisher: Yup.string().required("Publisher is required"),
+    languages: Yup.string().required("Language is required"),
+    genre: Yup.string().required("Genre is required"),
+    publishedDate: Yup.date()
+      .typeError("Published Date must be a valid date")
+      .required("Published Date is required"),
+    isbn: Yup.string()
+      .matches(/^\d{13}$/, "ISBN must be a 13-digit number")
+      .required("ISBN is required"),
+    availableCopies: Yup.number()
+      .integer("Available Copies must be an integer")
+      .min(0, "Available Copies cannot be negative")
+      .required("Available Copies is required"),
+    pages: Yup.number()
+      .integer("Pages must be an integer")
+      .min(1, "Pages must be at least 1")
+      .required("Pages are required"),
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    bookSchema
+      .validate(formData, { abortEarly: false }) // Validate all fields at once
+      .then(() => {
+        addBook(formData)
+          .then((res) => {
+            if (res.error) {
+              toast.error(res?.error?.data?.message);
+            } else {
+              const data = res?.data?.data;
+              console.log(data);
+              toast.success(data?.message);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            toast.error(err);
+          });
+      })
+      .catch((err) => {
+        const formattedErrors = err.inner.reduce((acc, curr) => {
+          acc[curr.path] = curr.message;
+          return acc;
+        }, {});
+        setErrors(formattedErrors);
+      });
+
+    //
+  };
   return (
-    <div className="mx-8 mt-12 w-full">
-      <form className="flex gap-8 w-full">
-        <div className="flex flex-col gap-2 py-2  w-full">
-          <div className="flex flex-col gap-2 py-2">
-            <label htmlFor="title" className="text-lg font-semibold ">
-              Product Name
+    <div className="mx-4 sm:mx-8 py-12 w-full h-[100vh] overflow-y-scroll scrollbar-hide">
+      <form
+        onSubmit={handleSubmit}
+        className="grid  sm:grid-cols-2 gap-6 max-w-[80vw] sm:max-w-[60vw] rounded-md p-2 sm:p-6  mx-auto border-2"
+      >
+        {/* Product Name */}
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <label htmlFor="title" className="text-lg font-semibold">
+            Product Name
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            placeholder="Write here..."
+            className="py-2 px-4 rounded-md border"
+            value={formData.title}
+            onChange={handleInputChange}
+          />
+          {errors.title && (
+            <p className="text-md text-red-700 my-1">{errors.title}</p>
+          )}
+        </div>
+        {/* Upload Thumbnail */}
+        <div className="flex flex-col">
+          <div className="flex items-center justify-center bg-white rounded-md border cursor-pointer h-40 w-40 self-center mx-auto">
+            <label htmlFor="thumbnail">
+              <img src={thumbnail ? thumbnail : uploadIcon} alt="Upload Icon" />
             </label>
             <input
-              type="text"
-              id="title"
-              name="title"
-              placeholder="write here..."
-              className="py-1 px-2  rounded-md  "
+              type="file"
+              id="thumbnail"
+              accept="image/*"
+              className="hidden"
+              name="thumbnail"
+              onChange={handleInputChange}
             />
           </div>
-          <div className="flex flex-col gap-2 py-2">
-            <label htmlFor="description" className="text-lg font-semibold">
-              Product Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              placeholder="write here..."
-              rows="4"
-              className="py-2 px-2 rounded-md  "
-            ></textarea>
-          </div>
-          <div className="flex flex-col gap-2 py-2">
-            <label htmlFor="author" className="text-lg font-semibold ">
-              Author
-            </label>
-            <input
-              type="text"
-              id="author"
-              name="author"
-              placeholder="write here..."
-              className="py-1 px-2  rounded-md  "
-              title="seperate the author with commas ( , )"
-            />
-          </div>
-          <div className=" flex gap-8 py-2">
-            <div className="flex flex-col gap-2 ">
-              <label htmlFor="category" className="text-lg font-semibold">
-                Category
-              </label>
-              <select
-                name="category"
-                id="category"
-                className="py-2 px-2 rounded-md "
-              >
-                <option hidden>select category</option>
-                {bookCategories.map((category) => {
-                  return (
-                    <option value={category} key={category}>
-                      {category}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 py-2">
-              <label htmlFor="publisher" className="text-lg font-semibold ">
-                Publisher
-              </label>
-              <input
-                type="text"
-                id="publisher"
-                name="publisher"
-                placeholder="write here..."
-                className="py-1 px-2  rounded-md  "
-              />
-            </div>
-          </div>
+          {errors.thumbnail && (
+            <p className="text-md text-red-700 my-1">{errors.thumbnail}</p>
+          )}
         </div>
 
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex gap-8">
-            <div className="w-[10rem] h-[10rem] flex items-center justify-center bg-white rounded-md cursor-pointer">
-              <label htmlFor="uploadThumnail">
-                <img src={uploadIcon} alt="uploadIcon" />
-              </label>
-              <input
-                type="file"
-                id="uploadThumnail"
-                accept="image/*"
-                className="hidden"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-col gap-2 py-2">
-                <label
-                  htmlFor="publishedDate"
-                  className="text-lg font-semibold "
-                >
-                  Published Date
-                </label>
-                <input
-                  type="date"
-                  id="publishedDate"
-                  name="publishedDate"
-                  placeholder="write here..."
-                  className="py-1 px-2  rounded-md  "
-                />
-              </div>
-              <div className="flex flex-col gap-2 py-2">
-                <label htmlFor="isbn" className="text-lg font-semibold ">
-                  ISBN Code
-                </label>
-                <input
-                  type="text"
-                  id="isbn"
-                  name="isbn"
-                  placeholder="write here..."
-                  className="py-1 px-2  rounded-md  "
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 py-2">
-            <label htmlFor="languages" className="text-lg font-semibold ">
-              Languages
-            </label>
-            <input
-              type="text"
-              id="languages"
-              name="languages"
-              placeholder="write here..."
-              className="py-1 px-2  rounded-md  "
-              title="seperate the languages with commas ( , )"
-            />
-          </div>
-          <div className="flex flex-col gap-2 py-2">
-            <label htmlFor="genre" className="text-lg font-semibold ">
-              Genre
-            </label>
-            <input
-              type="text"
-              id="genre"
-              name="genre"
-              placeholder="write here..."
-              className="py-1 px-2  rounded-md  "
-            />
-          </div>
-
-          <div className=" flex gap-8 py-2">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="availableCopies"
-                className="text-lg font-semibold "
-              >
-                Available Copies
-              </label>
-              <input
-                type="number"
-                id="availableCopies"
-                name="availableCopies"
-                min="0"
-                className="py-1 px-2  rounded-md  "
-              />
-            </div>
-            <div className="flex flex-col gap-2 ">
-              <label htmlFor="pages" className="text-lg font-semibold ">
-                Pages
-              </label>
-              <input
-                type="number"
-                id="pages"
-                name="pages"
-                min="0"
-                className="py-1 px-2  rounded-md  "
-              />
-            </div>
-          </div>
+        {/* Product Description */}
+        <div className="flex flex-col gap-2 ">
+          <label htmlFor="description" className="text-lg font-semibold">
+            Product Description
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Write here..."
+            rows="4"
+            className="py-2 px-4 rounded-md border"
+            value={formData.description}
+            onChange={handleInputChange}
+          ></textarea>
+          {errors.description && (
+            <p className="text-md text-red-700 my-1">{errors.description}</p>
+          )}
         </div>
+
+        {/* Author */}
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <label htmlFor="author" className="text-lg font-semibold">
+            Author
+          </label>
+          <input
+            type="text"
+            id="author"
+            name="author"
+            placeholder="Write here..."
+            className="py-2 px-4 rounded-md border"
+            title="Separate authors with commas ( , )"
+            value={formData.author}
+            onChange={handleInputChange}
+          />
+          {errors.author && (
+            <p className="text-md text-red-700 my-1">{errors.author}</p>
+          )}
+        </div>
+
+        {/* Category */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="category" className="text-lg font-semibold">
+            Category
+          </label>
+          <select
+            id="category"
+            name="category"
+            className="py-2 px-4 rounded-md border"
+            value={formData.category}
+            onChange={handleInputChange}
+          >
+            <option hidden>Select category</option>
+            {bookCategories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+          {errors.category && (
+            <p className="text-md text-red-700 my-1">{errors.category}</p>
+          )}
+        </div>
+
+        {/* Publisher */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="publisher" className="text-lg font-semibold">
+            Publisher
+          </label>
+          <input
+            type="text"
+            id="publisher"
+            name="publisher"
+            placeholder="Write here..."
+            className="py-2 px-4 rounded-md border"
+            value={formData.publisher}
+            onChange={handleInputChange}
+          />
+          {errors.publisher && (
+            <p className="text-md text-red-700 my-1">{errors.publisher}</p>
+          )}
+        </div>
+
+        {/* Languages */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="languages" className="text-lg font-semibold">
+            Languages
+          </label>
+          <input
+            type="text"
+            id="languages"
+            name="languages"
+            placeholder="Write here..."
+            className="py-2 px-4 rounded-md border"
+            title="Separate languages with commas ( , )"
+            value={formData.languages}
+            onChange={handleInputChange}
+          />
+          {errors.languages && (
+            <p className="text-md text-red-700 my-1">{errors.languages}</p>
+          )}
+        </div>
+
+        {/* Genre */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="genre" className="text-lg font-semibold">
+            Genre
+          </label>
+          <input
+            type="text"
+            id="genre"
+            name="genre"
+            placeholder="Write here..."
+            className="py-2 px-4 rounded-md border"
+            value={formData.genre}
+            onChange={handleInputChange}
+          />
+          {errors.genre && (
+            <p className="text-md text-red-700 my-1">{errors.genre}</p>
+          )}
+        </div>
+
+        {/* Published Date */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="publishedDate" className="text-lg font-semibold">
+            Published Date
+          </label>
+          <input
+            type="date"
+            id="publishedDate"
+            name="publishedDate"
+            className="py-2 px-4 rounded-md border"
+            value={formData.publishedDate}
+            onChange={handleInputChange}
+          />
+          {errors.publishedDate && (
+            <p className="text-md text-red-700 my-1">{errors.publishedDate}</p>
+          )}
+        </div>
+
+        {/* ISBN Code */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="isbn" className="text-lg font-semibold">
+            ISBN Code
+          </label>
+          <input
+            type="text"
+            id="isbn"
+            name="isbn"
+            placeholder="Write here..."
+            className="py-2 px-4 rounded-md border"
+            value={formData.isbn}
+            onChange={handleInputChange}
+          />
+          {errors.isbn && (
+            <p className="text-md text-red-700 my-1">{errors.isbn}</p>
+          )}
+        </div>
+
+        {/* Available Copies */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="availableCopies" className="text-lg font-semibold">
+            Available Copies
+          </label>
+          <input
+            type="number"
+            id="availableCopies"
+            name="availableCopies"
+            min="0"
+            className="py-2 px-4 rounded-md border"
+            value={formData.availableCopies}
+            onChange={handleInputChange}
+          />
+          {errors.availableCopies && (
+            <p className="text-md text-red-700 my-1">
+              {errors.availableCopies}
+            </p>
+          )}
+        </div>
+
+        {/* Pages */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="pages" className="text-lg font-semibold">
+            Pages
+          </label>
+          <input
+            type="number"
+            id="pages"
+            name="pages"
+            min="0"
+            className="py-2 px-4 rounded-md border"
+            value={formData.pages}
+            onChange={handleInputChange}
+          />
+          {errors.pages && (
+            <p className="text-md text-red-700 my-1">{errors.pages}</p>
+          )}
+        </div>
+        <button className="sm:col-span-2 bg-violet-950 p-2 text-white rounde-md">
+          Add Item
+        </button>
       </form>
     </div>
   );

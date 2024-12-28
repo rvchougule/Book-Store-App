@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+import scrollbar from "tailwind-scrollbar-hide";
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -18,12 +19,15 @@ export default {
           90: "#141414",
         },
       },
-      screens: {
-        xs: "400px",
-        "3xl": "1680px",
-        "4xl": "2200px",
-      },
+      // screens: {
+      //   xs: "400px",
+      //   "3xl": "1680px",
+      //   "4xl": "2200px",
+      // },
     },
   },
-  plugins: [],
+  plugins: [scrollbar],
+  variants: {
+    scrollbar: ["responsive"],
+  },
 };
