@@ -11,7 +11,18 @@ export const category = createApi({
       return headers;
     },
   }),
+  tagTypes: ["Category"],
   endpoints: (builder) => ({
+    getCategories: builder.query({
+      query: () => ({
+        url: "/category/",
+        method: "GET",
+        timeout: 5000,
+      }),
+      // transformResponse: (response) => console.log(response.data),
+      // transformErrorResponse: (response) => response,
+      providesTags: ["Category"],
+    }),
     addCategory: builder.mutation({
       query: (category) => ({
         url: "/category/",
@@ -19,22 +30,32 @@ export const category = createApi({
         body: category,
         timeout: 5000,
       }),
+      invalidatesTags: ["Category"],
     }),
     updateCategory: builder.mutation({
       query: (category) => ({
-        url: "/category/:categoryId",
+        url: `/category/${category._id}`,
         method: "PATCH",
         body: category,
         timeout: 5000,
       }),
+      invalidatesTags: ["Category"],
     }),
     deleteCategory: builder.mutation({
       query: (category) => ({
-        url: "/category/:categoryId",
+        url: `/category/${category._id}`,
         method: "DELETE",
         body: category,
         timeout: 5000,
       }),
+      invalidatesTags: ["Category"],
     }),
   }),
 });
+
+export const {
+  useGetCategoriesQuery,
+  useAddCategoryMutation,
+  useDeleteCategoryMutation,
+  useUpdateCategoryMutation,
+} = category;

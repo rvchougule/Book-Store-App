@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import * as Yup from "yup";
+import { useAddCategoryMutation } from "../../store/categorySlice";
+import { toast } from "react-toastify";
 
 export default function CategoryModal({ open, setOpen }) {
   const [formData, setFormData] = useState({
@@ -11,6 +13,8 @@ export default function CategoryModal({ open, setOpen }) {
     name: "",
     description: "",
   });
+
+  const [addCategory] = useAddCategoryMutation();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +35,17 @@ export default function CategoryModal({ open, setOpen }) {
     e.preventDefault();
 
     Schema.validate(formData, { abortEarly: false })
-      .then(() => {})
+      .then(() => {
+        addCategory(formData).then((res) => {
+          if (res?.error) {
+            toast.error(res?.error?.data?.message);
+          } else {
+            const data = res?.data?.data;
+            toast.success(data.message);
+            setOpen(!open);
+          }
+        });
+      })
       .catch((err) => {
         const formattedErrors = err.inner.reduce((acc, curr) => {
           acc[curr.path] = curr.message;
