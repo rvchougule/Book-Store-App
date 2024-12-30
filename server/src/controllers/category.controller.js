@@ -28,7 +28,7 @@ const publishCategory = asyncHandler(async (req, res) => {
 // update categories
 
 const updateCategory = asyncHandler(async (req, res) => {
-  const { categoryId, name, description } = req.body;
+  const { _id: categoryId, name, description } = req.body;
 
   if (!categoryId && !name && !description) {
     throw new ApiError(400, "Category Id, Name and description is required");

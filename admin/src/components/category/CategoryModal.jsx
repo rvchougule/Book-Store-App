@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import * as Yup from "yup";
-import { useAddCategoryMutation } from "../../store/categorySlice";
+import {
+  useAddCategoryMutation,
+  useUpdateCategoryMutation,
+} from "../../store/categorySlice";
 import { toast } from "react-toastify";
 
-export default function CategoryModal({ open, setOpen }) {
+export default function CategoryModal({
+  open,
+  setOpen,
+  editCategory,
+  setEditCategory,
+}) {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -14,7 +22,14 @@ export default function CategoryModal({ open, setOpen }) {
     description: "",
   });
 
+  useEffect(() => {
+    if (editCategory) {
+      setFormData(editCategory);
+    }
+  }, [editCategory]);
+
   const [addCategory] = useAddCategoryMutation();
+  const [updateCategory] = useUpdateCategoryMutation();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -36,15 +51,27 @@ export default function CategoryModal({ open, setOpen }) {
 
     Schema.validate(formData, { abortEarly: false })
       .then(() => {
-        addCategory(formData).then((res) => {
-          if (res?.error) {
-            toast.error(res?.error?.data?.message);
-          } else {
-            const data = res?.data?.data;
-            toast.success(data.message);
-            setOpen(!open);
-          }
-        });
+        if (editCategory) {
+          updateCategory(formData).then((res) => {
+            if (res?.error) {
+              toast.error(res?.error?.message);
+            } else {
+              const data = res?.data;
+              toast.success(data.message);
+            }
+          });
+          setEditCategory(false);
+        } else {
+          addCategory(formData).then((res) => {
+            if (res?.error) {
+              toast.error(res?.error?.message);
+            } else {
+              const data = res?.data;
+              toast.success(data.message);
+            }
+          });
+        }
+        setOpen(!open);
       })
       .catch((err) => {
         const formattedErrors = err.inner.reduce((acc, curr) => {
@@ -57,7 +84,13 @@ export default function CategoryModal({ open, setOpen }) {
   return createPortal(
     <div
       className="absolute top-0 left-0 w-full h-full bg-[#5a5a5aa4]"
-      onClick={() => setOpen(!open)}
+      onClick={() => {
+        setFormData({
+          name: "",
+          description: "",
+        });
+        setOpen(!open);
+      }}
     >
       <div className=" h-full w-full flex items-center justify-center  ">
         <form
@@ -104,7 +137,7 @@ export default function CategoryModal({ open, setOpen }) {
             )}
           </div>
           <button className="w-full bg-[#45237277] p-2 rounded-md">
-            Add Category
+            {editCategory ? "Add" : "Edit"} Category
           </button>
         </form>
       </div>

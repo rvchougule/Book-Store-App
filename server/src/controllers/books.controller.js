@@ -22,26 +22,25 @@ const publishBook = asyncHandler(async (req, res) => {
   } = req.body;
 
   if (
-    !(
-      [
-        title,
-        genre,
-        publishedDate,
-        isbn,
-        pages,
-        description,
-        publisher,
-        availableCopies,
-      ].some((filed) => filed.trim() === "") &&
-      !author.length &&
-      !language.length &&
-      !category.length
-    )
+    [
+      title,
+      genre,
+      publishedDate,
+      isbn,
+      pages,
+      description,
+      publisher,
+      availableCopies,
+    ].some((filed) => filed.trim() === "")
   ) {
     throw new ApiError(401, "All fields are required");
   }
 
-  const thumbnailPath = req.files?.thumbnail?.[0].path;
+  // &&
+  //     !author.length &&
+  //     !language.length &&
+  //     !category.length
+  const thumbnailPath = req.file?.path;
 
   if (!thumbnailPath) {
     throw new ApiError(400, "thumbnail required");

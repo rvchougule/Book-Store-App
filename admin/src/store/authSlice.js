@@ -1,19 +1,7 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { api } from "./apiSlice";
 
-export const auth = createApi({
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_URL,
-    prepareHeaders: (headers) => {
-      const token = JSON.parse(localStorage.getItem("access_token"));
-
-      // If we have a token set in state, let's assume that we should be passing it.
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-
-      return headers;
-    },
-  }),
+const auth = api.injectEndpoints({
+  tagTypes: ["auth"],
   endpoints: (builder) => ({
     signUp: builder.mutation({
       query: (user) => ({
@@ -40,6 +28,8 @@ export const auth = createApi({
       }),
     }),
   }),
+
+  overrideExisting: false,
 });
 
 export const { useSignUpMutation, useLoginMutation, useRefreshTokenMutation } =

@@ -1,16 +1,5 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-export const category = createApi({
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_URL,
-    prepareHeaders: (headers) => {
-      const token = JSON.parse(localStorage.getItem("access_token"));
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+import { api } from "./apiSlice.js";
+const category = api.injectEndpoints({
   tagTypes: ["Category"],
   endpoints: (builder) => ({
     getCategories: builder.query({
@@ -19,8 +8,6 @@ export const category = createApi({
         method: "GET",
         timeout: 5000,
       }),
-      // transformResponse: (response) => console.log(response.data),
-      // transformErrorResponse: (response) => response,
       providesTags: ["Category"],
     }),
     addCategory: builder.mutation({
@@ -42,8 +29,8 @@ export const category = createApi({
       invalidatesTags: ["Category"],
     }),
     deleteCategory: builder.mutation({
-      query: (category) => ({
-        url: `/category/${category._id}`,
+      query: (id) => ({
+        url: `/category/${id}`,
         method: "DELETE",
         body: category,
         timeout: 5000,
@@ -51,6 +38,7 @@ export const category = createApi({
       invalidatesTags: ["Category"],
     }),
   }),
+  overrideExisting: false,
 });
 
 export const {

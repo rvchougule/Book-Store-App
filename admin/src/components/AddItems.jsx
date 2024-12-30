@@ -3,29 +3,7 @@ import uploadIcon from "../assets/upload_icon.png";
 import { useState } from "react";
 import * as Yup from "yup";
 import { useAddBookMutation } from "../store/bookSlice";
-
-const bookCategories = [
-  "Fiction",
-  "Non-Fiction",
-  "Mystery & Thriller",
-  "Science Fiction",
-  "Fantasy",
-  "Romance",
-  "Biographies & Memoirs",
-  "Self-Help",
-  "Children's Books",
-  "History",
-  "Science & Technology",
-  "Cookbooks",
-  "Travel",
-  "Health & Wellness",
-  "Art & Photography",
-  "Religion & Spirituality",
-  "Education & Reference",
-  "Comics & Graphic Novels",
-  "Poetry",
-  "Sports & Outdoors",
-];
+import { useGetCategoriesQuery } from "../store/categorySlice";
 
 const fields = {
   title: "",
@@ -50,6 +28,8 @@ export default function AddItems() {
   const [errors, setErrors] = useState({ ...fields });
 
   const [addBook] = useAddBookMutation();
+
+  const { data } = useGetCategoriesQuery();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -236,9 +216,9 @@ export default function AddItems() {
             onChange={handleInputChange}
           >
             <option hidden>Select category</option>
-            {bookCategories.map((category) => (
-              <option key={category} value={category}>
-                {category}
+            {data?.data?.map((category) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
               </option>
             ))}
           </select>

@@ -1,20 +1,15 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-export const book = createApi({
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_URL,
-    prepareHeaders: (headers) => {
-      const token = JSON.parse(localStorage.getItem("access_token"));
-
-      // If we have a token set in state, let's assume that we should be passing it.
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-
-      return headers;
-    },
-  }),
+import { api } from "./apiSlice";
+const book = api.injectEndpoints({
+  tagTypes: ["Book"],
   endpoints: (builder) => ({
+    getBooks: builder.query({
+      query: () => ({
+        url: "/books/",
+        method: "GET",
+        timeout: 5000,
+      }),
+      providesTags: ["Book"],
+    }),
     addBook: builder.mutation({
       query: (book) => ({
         url: "/books/publish-book",
@@ -22,6 +17,7 @@ export const book = createApi({
         body: book,
         timeout: 5000,
       }),
+      invalidatesTags: ["Book"],
     }),
     updateBook: builder.mutation({
       query: (book) => ({
@@ -30,6 +26,7 @@ export const book = createApi({
         body: book,
         timeout: 5000,
       }),
+      invalidatesTags: ["Book"],
     }),
     deleteBook: builder.mutation({
       query: (book) => ({
@@ -38,8 +35,10 @@ export const book = createApi({
         body: book,
         timeout: 5000,
       }),
+      invalidatesTags: ["Book"],
     }),
   }),
+  overrideExisting: false,
 });
 
 export const {
