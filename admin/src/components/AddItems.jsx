@@ -8,16 +8,16 @@ import { useGetCategoriesQuery } from "../store/categorySlice";
 const fields = {
   title: "",
   thumbnail: "",
-  decription: "",
+  description: "",
   author: "",
   category: "",
   publisher: "",
   languages: "",
   genre: "",
   publishedDate: "",
-  isbn: undefined,
-  availableCopies: undefined,
-  pages: undefined,
+  isbn: "",
+  availableCopies: "",
+  pages: "",
 };
 
 export default function AddItems() {
@@ -95,7 +95,22 @@ export default function AddItems() {
     bookSchema
       .validate(formData, { abortEarly: false }) // Validate all fields at once
       .then(() => {
-        addBook(formData)
+        const book = {
+          title: formData.title,
+          thumbnail: formData.thumbnail,
+          description: formData.description,
+          author: formData.author.split(","),
+          category: formData.category,
+          publisher: formData.publisher,
+          languages: formData.languages.split(","),
+          genre: formData.genre,
+          publishedDate: formData.publishedDate,
+          isbn: formData.isbn,
+          availableCopies: formData.availableCopies,
+          pages: formData.pages,
+        };
+        console.log(book);
+        addBook(book)
           .then((res) => {
             if (res.error) {
               toast.error(res?.error?.data?.message);
@@ -111,7 +126,7 @@ export default function AddItems() {
           });
       })
       .catch((err) => {
-        const formattedErrors = err.inner.reduce((acc, curr) => {
+        const formattedErrors = err?.inner?.reduce((acc, curr) => {
           acc[curr.path] = curr.message;
           return acc;
         }, {});
@@ -147,8 +162,12 @@ export default function AddItems() {
         {/* Upload Thumbnail */}
         <div className="flex flex-col">
           <div className="flex items-center justify-center bg-white rounded-md border cursor-pointer h-40 w-40 self-center mx-auto">
-            <label htmlFor="thumbnail">
-              <img src={thumbnail ? thumbnail : uploadIcon} alt="Upload Icon" />
+            <label htmlFor="thumbnail" className="h-full w-full">
+              <img
+                src={thumbnail ? thumbnail : uploadIcon}
+                alt="Upload Icon"
+                className="h-full w-full object-contain rounded-md"
+              />
             </label>
             <input
               type="file"
@@ -159,6 +178,7 @@ export default function AddItems() {
               onChange={handleInputChange}
             />
           </div>
+
           {errors.thumbnail && (
             <p className="text-md text-red-700 my-1">{errors.thumbnail}</p>
           )}

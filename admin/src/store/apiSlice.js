@@ -7,7 +7,7 @@ export const api = createApi({
       const token = JSON.parse(localStorage.getItem("access_token"));
 
       if (token) {
-        headers.set("authorization", "Bearer " + token);
+        headers.set("authorization", `Bearer ${token}`);
       }
       return headers;
     },

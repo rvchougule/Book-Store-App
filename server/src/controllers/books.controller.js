@@ -21,59 +21,65 @@ const publishBook = asyncHandler(async (req, res) => {
     category,
   } = req.body;
 
-  if (
-    [
+  console.log(req);
+  try {
+    if (
+      [
+        title,
+        genre,
+        publishedDate,
+        isbn,
+        pages,
+        description,
+        publisher,
+        availableCopies,
+      ].some((field) => field.trim() === "") &&
+      !author.length &&
+      !language.length &&
+      !category.length
+    ) {
+      throw new ApiError(401, "All fields are required");
+    }
+
+    const thumbnailPath = req.file?.path;
+
+    if (!thumbnailPath) {
+      throw new ApiError(400, "thumbnail required");
+    }
+    console.log("Uploading");
+    const thumbnail = await uploadOnCloudinary(thumbnailPath);
+    console.log("Uploading complete");
+
+    if (!thumbnail.url) {
+      throw new ApiError(500, "Server failed to upload the Book Thumbnail");
+    }
+
+    const book = await Book.create({
       title,
+      author,
       genre,
       publishedDate,
       isbn,
       pages,
+      language,
       description,
       publisher,
+      thumbnail: thumbnail.url,
       availableCopies,
-    ].some((filed) => filed.trim() === "")
-  ) {
-    throw new ApiError(401, "All fields are required");
+      category,
+    });
+
+    if (!book) {
+      throw new ApiError(500, "Failed to publish the Book");
+    }
+
+    return res
+      .status(201)
+      .json(new ApiResponse(201, book, "The book published Successfully !"));
+  } catch (error) {
+    console.log(error);
+    throw new ApiError(500, `Error while publishing book ${error}`);
   }
-
-  // &&
-  //     !author.length &&
-  //     !language.length &&
-  //     !category.length
-  const thumbnailPath = req.file?.path;
-
-  if (!thumbnailPath) {
-    throw new ApiError(400, "thumbnail required");
-  }
-
-  const thumbnail = await uploadOnCloudinary(thumbnailPath);
-
-  if (!thumbnail.url) {
-    throw new ApiError(500, "Server failed to upload the Book Thumbnail");
-  }
-
-  const book = await Book.create({
-    title,
-    author,
-    genre,
-    publishedDate,
-    isbn,
-    pages,
-    language,
-    description,
-    publisher,
-    thumbnail: thumbnail.url,
-    availableCopies,
-    category,
-  });
-
-  if (!book) {
-    throw new ApiError(500, "Failed to publish the Book");
-  }
-
-  return res
-    .status(201)
-    .json(new ApiResponse(201, book, "The book published Successfully !"));
 });
 
 // update book
@@ -120,7 +126,7 @@ const updateBook = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Book not found");
   }
 
-  const thumbnailPath = req.files?.thumbnail?.[0].path;
+  const thumbnailPath = req.file?.path;
 
   if (!thumbnailPath) {
     throw new ApiError(400, "thumbnail required");

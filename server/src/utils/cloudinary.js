@@ -10,6 +10,8 @@ cloudinary.config({
 // Upload a file to cloudinary
 const uploadOnCloudinary = async (localFilePath, path = "img") => {
   try {
+    console.log("Uploading fn");
+
     //check whether the file exists
     if (!localFilePath) return null;
     // Upload a file
@@ -18,7 +20,7 @@ const uploadOnCloudinary = async (localFilePath, path = "img") => {
       resource_type: "auto",
     });
     // file uploaded successfully
-    // console.log("File uploaded successfully on cloudinary", response);
+    console.log("File uploaded successfully on cloudinary", response);
     fs.unlinkSync(localFilePath); // remove the file from the local storage
     return response; // return the response which contian the url of the uploaded file
   } catch (error) {

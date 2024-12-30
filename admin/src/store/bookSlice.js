@@ -15,9 +15,11 @@ const book = api.injectEndpoints({
         url: "/books/publish-book",
         method: "POST",
         body: book,
-        timeout: 5000,
+        // timeout: 5000,
       }),
-      invalidatesTags: ["Book"],
+      transformResponse: (res) => console.log(res),
+      transformErrorResponse: (err) => console.log(err),
+      // invalidatesTags: ["Book"],
     }),
     updateBook: builder.mutation({
       query: (book) => ({
