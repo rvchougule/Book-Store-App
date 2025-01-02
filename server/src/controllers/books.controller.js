@@ -21,7 +21,6 @@ const publishBook = asyncHandler(async (req, res) => {
     category,
   } = req.body;
 
-  console.log(req);
   try {
     if (
       [
@@ -46,9 +45,8 @@ const publishBook = asyncHandler(async (req, res) => {
     if (!thumbnailPath) {
       throw new ApiError(400, "thumbnail required");
     }
-    console.log("Uploading");
+
     const thumbnail = await uploadOnCloudinary(thumbnailPath);
-    console.log("Uploading complete");
 
     if (!thumbnail.url) {
       throw new ApiError(500, "Server failed to upload the Book Thumbnail");

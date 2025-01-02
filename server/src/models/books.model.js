@@ -54,6 +54,11 @@ const booksSchema = new Schema({
     ref: "Category",
     required: true,
   },
+  price: {
+    type: Number,
+    default: 0,
+    required: true,
+  },
 });
 
 booksSchema.plugin(mongooseAggregatePaginate);

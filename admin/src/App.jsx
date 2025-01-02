@@ -11,8 +11,8 @@ import Dashboard from "./components/Dashboard";
 import { useAuthContext } from "./hooks/useAuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import AddItems from "./components/AddItems";
-import ListItems from "./components/ListItems";
+import AddItems from "./components/books/AddItems";
+import ListItems from "./components/books/ListItems";
 import Orders from "./components/Orders";
 import Category from "./components/category/Category";
 

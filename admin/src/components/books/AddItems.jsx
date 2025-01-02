@@ -1,9 +1,9 @@
 import { toast } from "react-toastify";
-import uploadIcon from "../assets/upload_icon.png";
+import uploadIcon from "../../assets/upload_icon.png";
 import { useState } from "react";
 import * as Yup from "yup";
-import { useAddBookMutation } from "../store/bookSlice";
-import { useGetCategoriesQuery } from "../store/categorySlice";
+import { useAddBookMutation } from "../../store/bookSlice";
+import { useGetCategoriesQuery } from "../../store/categorySlice";
 
 const fields = {
   title: "",
@@ -95,29 +95,30 @@ export default function AddItems() {
     bookSchema
       .validate(formData, { abortEarly: false }) // Validate all fields at once
       .then(() => {
-        const book = {
-          title: formData.title,
-          thumbnail: formData.thumbnail,
-          description: formData.description,
-          author: formData.author.split(","),
-          category: formData.category,
-          publisher: formData.publisher,
-          languages: formData.languages.split(","),
-          genre: formData.genre,
-          publishedDate: formData.publishedDate,
-          isbn: formData.isbn,
-          availableCopies: formData.availableCopies,
-          pages: formData.pages,
-        };
-        console.log(book);
-        addBook(book)
+        const bookData = new FormData();
+
+        bookData.append("title", formData.title);
+        bookData.append("thumbnail", formData.thumbnail); // Add the file
+        bookData.append("description", formData.description);
+        bookData.append("author", formData.author.split(","));
+        bookData.append("category", formData.category);
+        bookData.append("publisher", formData.publisher);
+        bookData.append("languages", formData.languages.split(","));
+        bookData.append("genre", formData.genre);
+        bookData.append("publishedDate", formData.publishedDate);
+        bookData.append("isbn", formData.isbn);
+        bookData.append("availableCopies", formData.availableCopies);
+        bookData.append("pages", formData.pages);
+
+        addBook(bookData)
           .then((res) => {
             if (res.error) {
               toast.error(res?.error?.data?.message);
             } else {
-              const data = res?.data?.data;
-              console.log(data);
+              const data = res?.data;
               toast.success(data?.message);
+              setFormData({ ...fields });
+              setThumbnail(null);
             }
           })
           .catch((err) => {
