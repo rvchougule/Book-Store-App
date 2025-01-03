@@ -190,12 +190,13 @@ const deleteBook = asyncHandler(async (req, res) => {
 
   const book = await Book.findById(bookId);
 
-  if (book) {
-    throw new ApiError(404, "Book Details bot found");
+  if (!book) {
+    throw new ApiError(404, "Book Details not found");
   }
 
   const deleteThumbnail = await deleteInCloudinary(book.thumbnail);
 
+  console.log(deleteThumbnail);
   if (!deleteThumbnail.result !== "ok") {
     throw new ApiError(
       500,
