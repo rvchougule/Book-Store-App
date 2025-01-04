@@ -7,7 +7,9 @@ function Home() {
     <>
       <main className="h-[100vh] flex flex-col sm:flex-row  items-start overflow-hidden bg-[#45237214]">
         <SideBar />
-        <Outlet />
+        <div className=" w-full h-[100vh] overflow-y-scroll scrollbar-hide">
+          <Outlet />
+        </div>
       </main>
     </>
   );

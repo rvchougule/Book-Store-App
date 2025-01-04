@@ -194,15 +194,15 @@ const deleteBook = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Book Details not found");
   }
 
-  const deleteThumbnail = await deleteInCloudinary(book.thumbnail);
+  // const deleteThumbnail = await deleteInCloudinary(book.thumbnail);
 
-  console.log(deleteThumbnail);
-  if (!deleteThumbnail.result !== "ok") {
-    throw new ApiError(
-      500,
-      "Failed to delete thumbnail from cloudinary server"
-    );
-  }
+  // console.log(deleteThumbnail);
+  // if (!deleteThumbnail.result !== "ok") {
+  //   throw new ApiError(
+  //     500,
+  //     "Failed to delete thumbnail from cloudinary server"
+  //   );
+  // }
 
   const deleteBookField = await Book.findByIdAndDelete(bookId);
 

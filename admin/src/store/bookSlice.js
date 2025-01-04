@@ -22,7 +22,7 @@ const book = api.injectEndpoints({
     }),
     updateBook: builder.mutation({
       query: (book) => ({
-        url: "/books/:bookId",
+        url: `/books/${book._id}`,
         method: "PATCH",
         body: book,
         timeout: 5000,

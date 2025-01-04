@@ -1,9 +1,13 @@
 import { toast } from "react-toastify";
 import uploadIcon from "../../assets/upload_icon.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Yup from "yup";
-import { useAddBookMutation } from "../../store/bookSlice";
+import {
+  useAddBookMutation,
+  useUpdateBookMutation,
+} from "../../store/bookSlice";
 import { useGetCategoriesQuery } from "../../store/categorySlice";
+import { createPortal } from "react-dom";
 
 const fields = {
   title: "",
@@ -18,9 +22,16 @@ const fields = {
   isbn: "",
   availableCopies: "",
   pages: "",
+  price: "",
 };
 
-export default function AddItems() {
+export default function AddItems({
+  open,
+  setOpen,
+  parentPosition,
+  editBook,
+  setEditBook,
+}) {
   const [thumbnail, setThumbnail] = useState(null);
 
   const [formData, setFormData] = useState({ ...fields });
@@ -30,6 +41,14 @@ export default function AddItems() {
   const [addBook] = useAddBookMutation();
 
   const { data } = useGetCategoriesQuery();
+  const [updateBook] = useUpdateBookMutation();
+
+  useEffect(() => {
+    if (editBook) {
+      setFormData(editBook);
+      setThumbnail(editBook.thumbnail);
+    }
+  }, [editBook]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -87,6 +106,10 @@ export default function AddItems() {
       .integer("Pages must be an integer")
       .min(1, "Pages must be at least 1")
       .required("Pages are required"),
+    price: Yup.number()
+      .integer("Pages must be an integer")
+      .min(1, "Pages must be at least 1")
+      .required("Pages are required"),
   });
 
   const handleSubmit = async (e) => {
@@ -110,21 +133,42 @@ export default function AddItems() {
         bookData.append("availableCopies", formData.availableCopies);
         bookData.append("pages", formData.pages);
 
-        addBook(bookData)
-          .then((res) => {
-            if (res.error) {
-              toast.error(res?.error?.data?.message);
-            } else {
-              const data = res?.data;
-              toast.success(data?.message);
-              setFormData({ ...fields });
-              setThumbnail(null);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            toast.error(err);
-          });
+        if (editBook) {
+          updateBook(bookData)
+            .then((res) => {
+              if (res.error) {
+                toast.error(res?.error?.data?.message);
+              } else {
+                const data = res?.data;
+                toast.success(data?.message);
+                setFormData({ ...fields });
+                setThumbnail(null);
+                setEditBook("");
+                setOpen(false);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              toast.error(err);
+            });
+        } else {
+          addBook(bookData)
+            .then((res) => {
+              if (res.error) {
+                toast.error(res?.error?.data?.message);
+              } else {
+                const data = res?.data;
+                toast.success(data?.message);
+                setFormData({ ...fields });
+                setThumbnail(null);
+                setOpen(false);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              toast.error(err);
+            });
+        }
       })
       .catch((err) => {
         const formattedErrors = err?.inner?.reduce((acc, curr) => {
@@ -136,11 +180,20 @@ export default function AddItems() {
 
     //
   };
-  return (
-    <div className="mx-4 sm:mx-8 py-12 w-full h-[100vh] overflow-y-scroll scrollbar-hide">
+  return createPortal(
+    <div
+      className="h-[100vh] overflow-y-scroll absolute top-0 left-0 px-4 sm:px-8 py-12 w-full backdrop-blur-md "
+      style={{
+        top: `${parentPosition.top}px`,
+        left: `${parentPosition.left}px`,
+        width: `${parentPosition.width}px`,
+      }}
+      onClick={() => setOpen(!open)}
+    >
       <form
         onSubmit={handleSubmit}
-        className="grid  sm:grid-cols-2 gap-6 max-w-[80vw] sm:max-w-[60vw] rounded-md p-2 sm:p-6  mx-auto border-2"
+        onClick={(e) => e.stopPropagation()}
+        className="grid  sm:grid-cols-2 gap-6 max-w-[80vw] sm:max-w-[60vw] rounded-md p-2 sm:p-6  mx-auto border-2 bg-white"
       >
         {/* Product Name */}
         <div className="flex flex-col gap-2 sm:col-span-2">
@@ -316,7 +369,11 @@ export default function AddItems() {
             id="publishedDate"
             name="publishedDate"
             className="py-2 px-4 rounded-md border"
-            value={formData.publishedDate}
+            value={
+              formData.publishedDate
+                ? new Date(formData.publishedDate).toISOString().split("T")[0]
+                : ""
+            }
             onChange={handleInputChange}
           />
           {errors.publishedDate && (
@@ -382,10 +439,30 @@ export default function AddItems() {
             <p className="text-md text-red-700 my-1">{errors.pages}</p>
           )}
         </div>
+
+        {/* price */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="price" className="text-lg font-semibold">
+            Price
+          </label>
+          <input
+            type="number"
+            id="price"
+            name="price"
+            min="0"
+            className="py-2 px-4 rounded-md border"
+            value={formData.price}
+            onChange={handleInputChange}
+          />
+          {errors.pages && (
+            <p className="text-md text-red-700 my-1">{errors.price}</p>
+          )}
+        </div>
         <button className="sm:col-span-2 bg-violet-950 p-2 text-white rounde-md">
           Add Item
         </button>
       </form>
-    </div>
+    </div>,
+    document.getElementById("portal")
   );
 }
