@@ -23,9 +23,7 @@ router.route("/category").get(getBooksByCategory);
 router
   .route("/publish-book")
   .post(upload.single("thumbnail"), verifyAdminJWT, publishBook);
-router
-  .route("/:bookId")
-  .patch(upload.single("thumbnail"), verifyAdminJWT, updateBook);
+router.route("/:bookId").patch(verifyAdminJWT, updateBook);
 router.route("/:bookId").delete(verifyAdminJWT, deleteBook);
 
 export default router;

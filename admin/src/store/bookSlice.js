@@ -21,11 +21,11 @@ const book = api.injectEndpoints({
       invalidatesTags: ["Book"],
     }),
     updateBook: builder.mutation({
-      query: (book) => ({
-        url: `/books/${book._id}`,
+      query: (id, book) => ({
+        url: `/books/${id}`,
         method: "PATCH",
         body: book,
-        timeout: 5000,
+        // timeout: 5000,
       }),
       invalidatesTags: ["Book"],
     }),

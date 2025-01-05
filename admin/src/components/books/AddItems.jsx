@@ -33,19 +33,31 @@ export default function AddItems({
   setEditBook,
 }) {
   const [thumbnail, setThumbnail] = useState(null);
-
   const [formData, setFormData] = useState({ ...fields });
-
   const [errors, setErrors] = useState({ ...fields });
 
-  const [addBook] = useAddBookMutation();
-
   const { data } = useGetCategoriesQuery();
+  const [addBook] = useAddBookMutation();
   const [updateBook] = useUpdateBookMutation();
 
   useEffect(() => {
     if (editBook) {
-      setFormData(editBook);
+      setFormData({
+        _id: editBook._id,
+        title: editBook.title,
+        author: editBook.author?.join(","),
+        genre: editBook.genre,
+        publishedDate: editBook.publishedDate,
+        isbn: editBook.isbn,
+        pages: editBook.pages,
+        languages: editBook.languages?.join(","),
+        description: editBook.description,
+        publisher: editBook.publisher,
+        thumbnail: editBook.thumbnail,
+        availableCopies: editBook.availableCopies,
+        category: editBook.category?.join(","),
+        price: editBook.price,
+      });
       setThumbnail(editBook.thumbnail);
     }
   }, [editBook]);
@@ -70,21 +82,24 @@ export default function AddItems({
 
   const bookSchema = Yup.object().shape({
     title: Yup.string().required("Title is required"),
-    thumbnail: Yup.mixed()
-      .required("Thumbnail is required")
-      .test(
-        "is-file",
-        "Thumbnail is required",
-        (value) => value instanceof File
-      )
-      .test("file-type", "Only image files are allowed", (value) =>
-        value
-          ? ["image/jpeg", "image/png", "image/gif"].includes(value.type)
-          : false
-      )
-      .test("file-size", "File size must be less than 2MB", (value) =>
-        value ? value.size <= 2 * 1024 * 1024 : false
-      ),
+
+    thumbnail: !editBook
+      ? Yup.mixed()
+          .required("Thumbnail is required")
+          .test(
+            "is-file",
+            "Thumbnail is required",
+            (value) => value instanceof File
+          )
+          .test("file-type", "Only image files are allowed", (value) =>
+            value
+              ? ["image/jpeg", "image/png", "image/gif"].includes(value.type)
+              : false
+          )
+          .test("file-size", "File size must be less than 2MB", (value) =>
+            value ? value.size <= 2 * 1024 * 1024 : false
+          )
+      : "",
 
     description: Yup.string().required("Description is required"),
     author: Yup.string().required("Author is required"),
@@ -120,8 +135,11 @@ export default function AddItems({
       .then(() => {
         const bookData = new FormData();
 
+        bookData.append("_id", formData._id);
         bookData.append("title", formData.title);
-        bookData.append("thumbnail", formData.thumbnail); // Add the file
+        if (!editBook) {
+          bookData.append("thumbnail", formData.thumbnail); // Add the file
+        }
         bookData.append("description", formData.description);
         bookData.append("author", formData.author.split(","));
         bookData.append("category", formData.category);
@@ -132,9 +150,10 @@ export default function AddItems({
         bookData.append("isbn", formData.isbn);
         bookData.append("availableCopies", formData.availableCopies);
         bookData.append("pages", formData.pages);
+        bookData.append("price", formData.price);
 
         if (editBook) {
-          updateBook(bookData)
+          updateBook(formData._id, bookData)
             .then((res) => {
               if (res.error) {
                 toast.error(res?.error?.data?.message);
@@ -188,7 +207,10 @@ export default function AddItems({
         left: `${parentPosition.left}px`,
         width: `${parentPosition.width}px`,
       }}
-      onClick={() => setOpen(!open)}
+      onClick={() => {
+        setEditBook("");
+        setOpen(!open);
+      }}
     >
       <form
         onSubmit={handleSubmit}
@@ -215,7 +237,11 @@ export default function AddItems({
         </div>
         {/* Upload Thumbnail */}
         <div className="flex flex-col">
-          <div className="flex items-center justify-center bg-white rounded-md border cursor-pointer h-40 w-40 self-center mx-auto">
+          <div
+            className={`flex items-center justify-center bg-white rounded-md border cursor-${
+              editBook ? "not-allowed" : "pointer"
+            } h-40 w-40 self-center mx-auto`}
+          >
             <label htmlFor="thumbnail" className="h-full w-full">
               <img
                 src={thumbnail ? thumbnail : uploadIcon}
@@ -230,6 +256,7 @@ export default function AddItems({
               className="hidden"
               name="thumbnail"
               onChange={handleInputChange}
+              disabled={editBook ? true : false}
             />
           </div>
 
@@ -459,7 +486,7 @@ export default function AddItems({
           )}
         </div>
         <button className="sm:col-span-2 bg-violet-950 p-2 text-white rounde-md">
-          Add Item
+          {editBook ? "Update" : "Add"} Item
         </button>
       </form>
     </div>,

@@ -72,13 +72,13 @@ function ListItems() {
   return (
     <div className="p-4 w-full " ref={parentRef}>
       {/* Search and Filter Section */}
-      <div className="flex gap-4 mb-4 items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 mb-4 sm:items-center  justify-between">
         <input
           type="text"
           placeholder="Search books..."
           value={searchTerm}
           onChange={handleSearch}
-          className="p-2 border rounded-md sm:w-[40%]"
+          className="p-2 border rounded-md  sm:w-[40%]"
         />
         <select
           value={selectedCategory}
@@ -95,7 +95,7 @@ function ListItems() {
       </div>
       <div className="flex w-full  items-center justify-end">
         <button
-          className="flex gap-2  font-bold self-end p-4 bg-[#45237277] rounded-md cursor-pointer"
+          className="flex gap-2  font-bold self-end p-2 sm:p-4 bg-[#45237277] rounded-md cursor-pointer"
           onClick={() => setOpen(true)}
         >
           <PlusSquare /> Add
@@ -144,7 +144,7 @@ function ListItems() {
                     key={book._id}
                     className={` border-2 border-black rounded-2xl cursor-pointer  ${
                       displayBook._id === book._id
-                        ? "bg-[#6968695d]"
+                        ? "bg-white lg:bg-[#6968695d]"
                         : "bg-white"
                     }`}
                     onClick={() => setDisplayBook(book)}
@@ -161,7 +161,7 @@ function ListItems() {
                     <td className="px-2 py-2 text-center">{book.price}</td>
                     <td className=" p-2 ">
                       <Edit
-                        className="text-green-600 cursor-pointer inline-block m-4"
+                        className="text-green-600 cursor-pointer inline-block sm:m-4"
                         onClick={() => {
                           setEditBook(book);
                           setOpen(true);

@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary, deleteInCloudinary } from "../utils/cloudinary.js";
 
 import { Book } from "../models/books.model.js";
+import fs from "fs";
 
 // create book
 const publishBook = asyncHandler(async (req, res) => {
@@ -14,11 +15,12 @@ const publishBook = asyncHandler(async (req, res) => {
     publishedDate,
     isbn,
     pages,
-    language,
+    languages,
     description,
     publisher,
     availableCopies = 0,
     category,
+    price,
   } = req.body;
 
   try {
@@ -32,10 +34,11 @@ const publishBook = asyncHandler(async (req, res) => {
         description,
         publisher,
         availableCopies,
-      ].some((field) => field.trim() === "") &&
-      !author.length &&
-      !language.length &&
-      !category.length
+        price,
+        author,
+        category,
+        languages,
+      ].some((field) => field.toString().trim() === "")
     ) {
       throw new ApiError(401, "All fields are required");
     }
@@ -59,12 +62,13 @@ const publishBook = asyncHandler(async (req, res) => {
       publishedDate,
       isbn,
       pages,
-      language,
+      languages,
       description,
       publisher,
       thumbnail: thumbnail.url,
       availableCopies,
       category,
+      price,
     });
 
     if (!book) {
@@ -76,6 +80,7 @@ const publishBook = asyncHandler(async (req, res) => {
       .json(new ApiResponse(201, book, "The book published Successfully !"));
   } catch (error) {
     console.log(error);
+    fs.unlinkSync(req.file?.path);
     throw new ApiError(500, `Error while publishing book ${error}`);
   }
 });
@@ -91,15 +96,16 @@ const updateBook = asyncHandler(async (req, res) => {
     publishedDate,
     isbn,
     pages,
-    language,
+    languages,
     description,
     publisher,
     availableCopies = 0,
     category,
+    price,
   } = req.body;
 
-  if (
-    !(
+  try {
+    if (
       [
         title,
         genre,
@@ -109,73 +115,106 @@ const updateBook = asyncHandler(async (req, res) => {
         description,
         publisher,
         availableCopies,
-      ].some((filed) => filed.trim() === "") &&
-      !author.length &&
-      !language.length &&
-      !category.length
-    )
-  ) {
-    throw new ApiError(401, "All fields are required");
-  }
-
-  const book = await Book.findById(bookId);
-
-  if (!book) {
-    throw new ApiError(404, "Book not found");
-  }
-
-  const thumbnailPath = req.file?.path;
-
-  if (!thumbnailPath) {
-    throw new ApiError(400, "thumbnail required");
-  }
-
-  const thumbnail = await uploadOnCloudinary(thumbnailPath);
-
-  if (!thumbnail.url) {
-    throw new ApiError(500, "Server failed to upload the Book Thumbnail");
-  }
-
-  const deleteOldThumbnail = await deleteInCloudinary(book.thumbnail);
-
-  if (!deleteOldThumbnail) {
-    throw new ApiError(500, "Failed to delete the Book Thumbnail");
-  }
-
-  const updatedBook = await Book.findByIdAndUpdate(
-    bookId,
-    {
-      $set: {
-        title,
+        price,
         author,
-        genre,
-        publishedDate,
-        isbn,
-        pages,
-        language,
-        description,
-        publisher,
-        thumbnail: thumbnail.url,
-        availableCopies,
         category,
-      },
-    },
-    {
-      new: true,
+        languages,
+      ].some((field) => field?.toString().trim() === "")
+    ) {
+      throw new ApiError(401, "All fields are required");
     }
-  );
 
-  if (!updatedBook) {
-    throw new ApiError(500, "Failed to update the Book");
+    const book = await Book.findById(bookId);
+
+    if (!book) {
+      throw new ApiError(404, "Book not found");
+    }
+
+    const updatedBook = await Book.findByIdAndUpdate(
+      bookId,
+      {
+        $set: {
+          title,
+          author,
+          genre,
+          publishedDate,
+          isbn,
+          pages,
+          languages,
+          description,
+          publisher,
+          availableCopies,
+          category,
+          price,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedBook) {
+      throw new ApiError(500, "Failed to update the Book");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, updatedBook, "Book updated successfully"));
+  } catch (err) {
+    console.log(err);
   }
-
-  return res.status(
-    (200).json(new ApiResponse(200, updatedBook, "Book updated successfully"))
-  );
 });
 
 // update book avatar
-const updateBookAvatar = asyncHandler(async (req, res) => {});
+const updateBookAvatar = asyncHandler(async (req, res) => {
+  try {
+    const { bookId } = req.params;
+
+    const thumbnailPath = req.file?.path;
+
+    const book = await Book.findById(bookId);
+
+    if (!book) {
+      throw new ApiError(404, "Book not found");
+    }
+
+    if (!thumbnailPath) {
+      throw new ApiError(400, "thumbnail required");
+    }
+
+    const thumbnail = await uploadOnCloudinary(thumbnailPath);
+
+    if (!thumbnail.url) {
+      throw new ApiError(500, "Server failed to upload the Book Thumbnail");
+    }
+
+    // TODO:Delete old thumbnail from the cloudinary
+
+    const updatedBook = await Book.findByIdAndUpdate(
+      bookId,
+      {
+        $set: {
+          thumbnail: thumbnail.url,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedBook) {
+      throw new ApiError(500, "Failed to update the Thumbnails of Book");
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, updatedBook, "Book thumbnail updated successfully")
+      );
+  } catch (err) {
+    fs.unlinkSync(req.file?.path);
+  }
+});
 
 // update book quantity
 const updateBookQuantity = asyncHandler(async (req, res) => {});
@@ -541,6 +580,7 @@ const getBooksByCategory = asyncHandler(async (req, res) => {
 export {
   publishBook,
   updateBook,
+  updateBookAvatar,
   deleteBook,
   getBook,
   getAllBooks,
