@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import {
   ChartBarStackedIcon,
@@ -6,8 +6,14 @@ import {
   CrossIcon,
   LibraryBigIcon,
   ListChecks,
+  LogOutIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { useAuthContext } from "../hooks/useAuthContext";
+import { useGetCurrentUserQuery, useLogoutMutation } from "../store/authSlice";
+import { toast } from "react-toastify";
+import ClipLoader from "react-spinners/ClipLoader";
+import BeatLoader from "react-spinners/BeatLoader";
 
 const menu = [
   {
@@ -28,6 +34,30 @@ const menu = [
 ];
 function SideBar() {
   const [menuBox, setMenuBox] = useState(false);
+  const { ClearStates } = useAuthContext();
+  const { data, isFetching, isLoading } = useGetCurrentUserQuery();
+  const userDetails = data?.data;
+
+  const [logout, { isLoading: isLogoutLoading }] = useLogoutMutation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout()
+      .then((res) => {
+        if (res.error) {
+          toast.error(res?.error?.data?.message);
+        } else {
+          const data = res?.data;
+          toast.success(data?.message);
+          ClearStates();
+          navigate("/login");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error(err);
+      });
+  };
   return (
     <div className="h-[64px] w-full flex justify-between sm:justify-start sm:flex-col sm:h-[100vh] sm:w-52 sm:shrink-0 overflow-hidden bg-white  ">
       <NavLink
@@ -59,7 +89,25 @@ function SideBar() {
       </div>
       {/* small device popup */}
       <div className="sm:hidden">
-        <CircleUserRound className="m-4" onClick={() => setMenuBox(!menuBox)} />
+        {isFetching || isLoading ? (
+          <ClipLoader
+            color="#5b2fe0"
+            size={35}
+            className="w-10 h-10 m-4 rounded-full"
+          />
+        ) : userDetails ? (
+          <img
+            src={userDetails.avatar}
+            alt="avatar"
+            className="w-10 h-10 m-4 rounded-full border-2 border-[#5b2fe0]"
+            onClick={() => setMenuBox(!menuBox)}
+          />
+        ) : (
+          <CircleUserRound
+            className="m-4"
+            onClick={() => setMenuBox(!menuBox)}
+          />
+        )}
         {menuBox && (
           <div className="absolute top-4 right-2 bg-[#cccccc7a]  rounded-md backdrop-blur-md">
             <div className="flex p-1 justify-end">
@@ -67,6 +115,13 @@ function SideBar() {
                 className="rotate-45 w-4 cursor-pointer"
                 onClick={() => setMenuBox(!menuBox)}
               />
+            </div>
+            <div className="flex items-center justify-start  gap-2 my-1 py-1 sm:pl-12 ">
+              <CircleUserRound className="mx-2" />
+              <span className="font-semibold text-xs pr-2">{`${userDetails.fullName?.substring(
+                0,
+                16
+              )}...`}</span>
             </div>
             {menu.map((tab, i) => {
               return (
@@ -87,6 +142,19 @@ function SideBar() {
                 </NavLink>
               );
             })}
+            <div
+              className="flex items-center justify-start  gap-2 my-1 py-1 sm:pl-12 "
+              onClick={handleLogout}
+            >
+              {isLogoutLoading ? (
+                <BeatLoader color="#5b2fe0" size={15} className="mx-auto" />
+              ) : (
+                <>
+                  <LogOutIcon className="mx-2 text-red-500" />
+                  <span className="font-semibold text-xs pr-2">Log out</span>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>

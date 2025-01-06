@@ -8,6 +8,7 @@ import {
 } from "../../store/bookSlice";
 import { useGetCategoriesQuery } from "../../store/categorySlice";
 import { createPortal } from "react-dom";
+import BeatLoader from "react-spinners/BeatLoader";
 
 const fields = {
   title: "",
@@ -36,9 +37,10 @@ export default function AddItems({
   const [formData, setFormData] = useState({ ...fields });
   const [errors, setErrors] = useState({ ...fields });
 
-  const { data } = useGetCategoriesQuery();
-  const [addBook] = useAddBookMutation();
-  const [updateBook] = useUpdateBookMutation();
+  const { data, isLoading } = useGetCategoriesQuery();
+  const [addBook, { isLoading: isBookLoading }] = useAddBookMutation();
+  const [updateBook, { isLoading: isUpdateBookLoading }] =
+    useUpdateBookMutation();
 
   useEffect(() => {
     if (editBook) {
@@ -309,20 +311,24 @@ export default function AddItems({
           <label htmlFor="category" className="text-lg font-semibold">
             Category
           </label>
-          <select
-            id="category"
-            name="category"
-            className="py-2 px-4 rounded-md border"
-            value={formData.category}
-            onChange={handleInputChange}
-          >
-            <option hidden>Select category</option>
-            {data?.data?.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+          {isLoading ? (
+            <BeatLoader size={15} className="mx-auto" />
+          ) : (
+            <select
+              id="category"
+              name="category"
+              className="py-2 px-4 rounded-md border"
+              value={formData.category}
+              onChange={handleInputChange}
+            >
+              <option hidden>Select category</option>
+              {data?.data?.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          )}
           {errors.category && (
             <p className="text-md text-red-700 my-1">{errors.category}</p>
           )}
@@ -485,8 +491,15 @@ export default function AddItems({
             <p className="text-md text-red-700 my-1">{errors.price}</p>
           )}
         </div>
-        <button className="sm:col-span-2 bg-violet-950 p-2 text-white rounde-md">
-          {editBook ? "Update" : "Add"} Item
+
+        <button className="sm:col-span-2 bg-violet-950 p-2 text-white rounded-lg">
+          {isBookLoading || isUpdateBookLoading ? (
+            <BeatLoader size={20} color="#fff" />
+          ) : editBook ? (
+            "Update Item"
+          ) : (
+            "Add Item"
+          )}
         </button>
       </form>
     </div>,

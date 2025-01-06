@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import AddItems from "./AddItems";
 import UploadModal from "./UploadModal";
 import BookInfo from "./BookInfo";
+import BeatLoader from "react-spinners/BeatLoader";
 
 function ListItems() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +19,8 @@ function ListItems() {
 
   const { data: categories } = useGetCategoriesQuery();
   const { data: booksData, isError, isLoading } = useGetBooksQuery();
-  const [deleteBook] = useDeleteBookMutation();
+  const [deleteBook, { isLoading: isDeleteLoading, isFetching }] =
+    useDeleteBookMutation();
 
   const [editBook, setEditBook] = useState("");
   const [uploadThumbnail, setUploadThumbnail] = useState("");
@@ -135,8 +137,8 @@ function ListItems() {
                 </tr>
               ) : isLoading ? (
                 <tr>
-                  <td colSpan="5" className="text-center">
-                    Loading...
+                  <td colSpan="5" className="justify-items-center">
+                    <BeatLoader size={20} color="#5b2fe0" />
                   </td>
                 </tr>
               ) : filteredBooks.length === 0 ? (
@@ -174,10 +176,14 @@ function ListItems() {
                           setOpen(true);
                         }}
                       />
-                      <Trash2
-                        className="text-red-600 cursor-pointer inline-block "
-                        onClick={() => handleDelete(book._id)}
-                      />
+                      {isDeleteLoading || isFetching ? (
+                        <BeatLoader size={10} color="red" />
+                      ) : (
+                        <Trash2
+                          className="text-red-600 cursor-pointer inline-block "
+                          onClick={() => handleDelete(book._id)}
+                        />
+                      )}
                     </td>
                   </tr>
                 ))

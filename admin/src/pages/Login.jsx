@@ -16,7 +16,7 @@ export default function Login() {
     password: "",
   });
 
-  const { setAccessToken, setRefreshToken, setUserDetails } = useAuthContext();
+  const { setAccessToken, setRefreshToken } = useAuthContext();
   const [login] = useLoginMutation();
 
   const handleInputChange = (e) => {
@@ -57,6 +57,7 @@ export default function Login() {
           toast.error(res?.error?.data?.message);
         } else {
           const data = res?.data?.data;
+          console.log(res);
           const access_token = data?.accessToken;
           const refresh_token = data?.refreshToken;
           toast.success(data?.message);
@@ -64,7 +65,7 @@ export default function Login() {
           localStorage.setItem("refresh_token", JSON.stringify(refresh_token));
           setAccessToken(access_token);
           setRefreshToken(refresh_token);
-          setUserDetails(data);
+          toast.success(res.data.message);
           navigate("/");
         }
       })

@@ -10,10 +10,12 @@ export const AuthProvider = ({ children }) => {
     JSON.parse(localStorage.getItem("refresh_token")) || ""
   );
 
-  const [userDetails, setUserDetails] = useState();
-
-  // refresh token
-
+  const ClearStates = () => {
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("access_token");
+    setAccessToken(null);
+    setRefreshToken(null);
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -21,8 +23,7 @@ export const AuthProvider = ({ children }) => {
         setAccessToken,
         refreshToken,
         setRefreshToken,
-        userDetails,
-        setUserDetails,
+        ClearStates,
       }}
     >
       {children}
