@@ -4,19 +4,24 @@ import { useDeleteBookMutation, useGetBooksQuery } from "../../store/bookSlice";
 import { Edit, PlusSquare, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import AddItems from "./AddItems";
+import UploadModal from "./UploadModal";
+import BookInfo from "./BookInfo";
 
 function ListItems() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [displayBook, setDisplayBook] = useState("");
   const [open, setOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const parentRef = useRef(null); // Reference to the parent
   const [parentPosition, setParentPosition] = useState({});
 
   const { data: categories } = useGetCategoriesQuery();
   const { data: booksData, isError, isLoading } = useGetBooksQuery();
   const [deleteBook] = useDeleteBookMutation();
+
   const [editBook, setEditBook] = useState("");
+  const [uploadThumbnail, setUploadThumbnail] = useState("");
 
   useEffect(() => {
     if (open && parentRef.current) {
@@ -93,6 +98,8 @@ function ListItems() {
           ))}
         </select>
       </div>
+
+      {/* add button */}
       <div className="flex w-full  items-center justify-end">
         <button
           className="flex gap-2  font-bold self-end p-2 sm:p-4 bg-[#45237277] rounded-md cursor-pointer"
@@ -181,41 +188,16 @@ function ListItems() {
 
         {/* Display book */}
         {displayBook && (
-          <div className="hidden lg:block w-full sm:w-1/3 my-4 border-2 border-[#45237277] p-4 rounded-md bg-white">
-            <div className="">
-              <img
-                src={displayBook.thumbnail}
-                alt=""
-                className="mx-auto sm:max-h-[30vh]"
-              />
-              <h1 className="text-center font-bold text-2xl py-2">
-                {displayBook.title}
-              </h1>
-            </div>
-            <div className="flex flex-col gap-2 font-bold">
-              <h4 className="">Author : {displayBook.author.join(",")}</h4>
-              <h4 className="">Description : {displayBook.description}</h4>
-              <h4 className="">
-                Category : {displayBook.categories.join(",")}
-              </h4>
-              <h4 className="">
-                Languages : {displayBook.languages.join(",")}
-              </h4>
-              <h4 className="">ISBN : {displayBook.isbn}</h4>
-              <h4 className="">Genre : {displayBook.genre}</h4>
-              <h4 className="">Publisher : {displayBook.publisher}</h4>
-              <h4 className="">
-                Published Date : {displayBook.publishedDate.slice(0, 10)}
-              </h4>
-              <h4 className="">
-                Available Copies : {displayBook.availableCopies}
-              </h4>
-              <h4 className="">Pages : {displayBook.pages}</h4>
-              <h4 className="">Price : {displayBook.price || 0}</h4>
-            </div>
-          </div>
+          <BookInfo
+            displayBook={displayBook}
+            setDisplayBook={setDisplayBook}
+            setUploadOpen={setUploadOpen}
+            setUploadThumbnail={setUploadThumbnail}
+          />
         )}
       </div>
+
+      {/* Modals */}
       {open && (
         <AddItems
           open={open}
@@ -223,6 +205,15 @@ function ListItems() {
           parentPosition={parentPosition}
           editBook={editBook}
           setEditBook={setEditBook}
+        />
+      )}
+      {uploadOpen && (
+        <UploadModal
+          uploadThumbnail={uploadThumbnail}
+          setUploadThumbnail={setUploadThumbnail}
+          parentPosition={parentPosition}
+          setUploadOpen={setUploadOpen}
+          setDisplayBook={setDisplayBook}
         />
       )}
     </div>

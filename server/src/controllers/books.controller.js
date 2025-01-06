@@ -166,7 +166,7 @@ const updateBook = asyncHandler(async (req, res) => {
 });
 
 // update book avatar
-const updateBookAvatar = asyncHandler(async (req, res) => {
+const updateBookThumbnail = asyncHandler(async (req, res) => {
   try {
     const { bookId } = req.params;
 
@@ -580,7 +580,7 @@ const getBooksByCategory = asyncHandler(async (req, res) => {
 export {
   publishBook,
   updateBook,
-  updateBookAvatar,
+  updateBookThumbnail,
   deleteBook,
   getBook,
   getAllBooks,

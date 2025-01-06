@@ -7,6 +7,7 @@ import {
   getBook,
   getAllBooks,
   getBooksByCategory,
+  updateBookThumbnail,
 } from "../controllers/books.controller.js";
 import { upload } from "../middlewares/multer.middelware.js";
 import { verifyAdminJWT } from "../middlewares/adminAuth.middleware.js";
@@ -24,6 +25,9 @@ router
   .route("/publish-book")
   .post(upload.single("thumbnail"), verifyAdminJWT, publishBook);
 router.route("/:bookId").patch(verifyAdminJWT, updateBook);
+router
+  .route("/thumbnail/:bookId")
+  .patch(upload.single("thumbnail"), verifyAdminJWT, updateBookThumbnail);
 router.route("/:bookId").delete(verifyAdminJWT, deleteBook);
 
 export default router;
