@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRefreshTokenMutation } from "../store/authSlice";
 import { useAuthContext } from "./useAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ function useRefreshToken() {
     useAuthContext();
 
   const navigate = useNavigate();
+  const flag = useRef(true);
 
   const refreshAccessToken = async () => {
     try {
@@ -35,9 +36,14 @@ function useRefreshToken() {
 
   useEffect(() => {
     if (refreshToken) {
-      setTimeout(() => {
+      if (flag.current) {
         refreshAccessToken();
-      }, 3600000);
+        flag.current = false;
+      } else {
+        setTimeout(() => {
+          refreshAccessToken();
+        }, 3600000);
+      }
     } else {
       navigate("/login");
     }

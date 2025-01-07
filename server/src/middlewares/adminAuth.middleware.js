@@ -10,7 +10,6 @@ export const verifyAdminJWT = asyncHandler(async (req, _, next) => {
       req.header("Authorization")?.replace("Bearer", "").trim();
 
     if (!token) {
-      console.log(token);
       throw new ApiError(401, "Unauthorized request");
     }
 

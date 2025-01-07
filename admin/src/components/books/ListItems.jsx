@@ -162,12 +162,14 @@ function ListItems() {
                       <img
                         src={book.thumbnail}
                         alt=""
-                        className="sm:w-16 rounded-md"
+                        className="sm:w-16 max-w-12  rounded-md"
                       />
                     </td>
                     <td className="px-2 py-2 ">{book.title}</td>
                     <td className="px-2 py-2 text-center">{book.categories}</td>
-                    <td className="px-2 py-2 text-center">{book.price}</td>
+                    <td className="px-2 py-2 text-center">
+                      {book.price}&nbsp;₹
+                    </td>
                     <td className=" p-2 ">
                       <Edit
                         className="text-green-600 cursor-pointer inline-block sm:m-4"
@@ -180,7 +182,7 @@ function ListItems() {
                         <BeatLoader size={10} color="red" />
                       ) : (
                         <Trash2
-                          className="text-red-600 cursor-pointer inline-block "
+                          className="text-red-600 cursor-pointer inline-block sm:m-4"
                           onClick={() => handleDelete(book._id)}
                         />
                       )}

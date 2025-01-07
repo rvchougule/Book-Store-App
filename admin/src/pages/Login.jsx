@@ -57,7 +57,6 @@ export default function Login() {
           toast.error(res?.error?.data?.message);
         } else {
           const data = res?.data?.data;
-          console.log(res);
           const access_token = data?.accessToken;
           const refresh_token = data?.refreshToken;
           toast.success(data?.message);

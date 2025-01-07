@@ -577,6 +577,126 @@ const getBooksByCategory = asyncHandler(async (req, res) => {
   }
 });
 
+// Add multiple books
+const publishMultipleBooks = asyncHandler(async (req, res) => {
+  const booksData = req.body.books; // Expecting an array of books
+  const uploadedFiles = req.files; // Multer stores uploaded files here
+
+  if (!Array.isArray(booksData) || booksData.length === 0) {
+    throw new ApiError(
+      400,
+      "Books data must be an array with at least one book"
+    );
+  }
+
+  if (
+    !Array.isArray(uploadedFiles) ||
+    uploadedFiles.length !== booksData.length
+  ) {
+    throw new ApiError(
+      400,
+      "Each book must have a corresponding thumbnail file"
+    );
+  }
+
+  try {
+    const uploadedBooks = [];
+
+    for (let i = 0; i < booksData.length; i++) {
+      const bookData = JSON.parse(booksData[i]); // Parse each book JSON string
+      const {
+        title,
+        author,
+        genre,
+        publishedDate,
+        isbn,
+        pages,
+        languages,
+        description,
+        publisher,
+        availableCopies = 0,
+        category,
+        price,
+      } = bookData;
+
+      if (
+        [
+          title,
+          genre,
+          publishedDate,
+          isbn,
+          pages,
+          description,
+          publisher,
+          availableCopies,
+          price,
+          author,
+          category,
+          languages,
+        ].some((field) => !field || field.toString().trim() === "")
+      ) {
+        throw new ApiError(401, "All fields are required for every book");
+      }
+
+      // Thumbnail for the current book
+      const thumbnailPath = uploadedFiles[i]?.path;
+
+      if (!thumbnailPath) {
+        throw new ApiError(400, `Thumbnail required for the book: ${title}`);
+      }
+
+      const thumbnail = await uploadOnCloudinary(thumbnailPath);
+
+      if (!thumbnail.url) {
+        throw new ApiError(
+          500,
+          `Failed to upload the thumbnail for the book: ${title}`
+        );
+      }
+
+      // Create book
+      const book = await Book.create({
+        title,
+        author,
+        genre,
+        publishedDate,
+        isbn,
+        pages,
+        languages,
+        description,
+        publisher,
+        thumbnail: thumbnail.url,
+        availableCopies,
+        category,
+        price,
+      });
+
+      if (!book) {
+        throw new ApiError(500, `Failed to publish the book: ${title}`);
+      }
+
+      uploadedBooks.push(book);
+    }
+
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(201, uploadedBooks, "Books published successfully!")
+      );
+  } catch (error) {
+    console.error(error);
+
+    // Cleanup uploaded files in case of an error
+    if (req.files) {
+      req.files.forEach((file) => {
+        fs.unlinkSync(file.path);
+      });
+    }
+
+    throw new ApiError(500, `Error while publishing books: ${error.message}`);
+  }
+});
+
 export {
   publishBook,
   updateBook,
@@ -585,4 +705,5 @@ export {
   getBook,
   getAllBooks,
   getBooksByCategory,
+  publishMultipleBooks,
 };

@@ -68,6 +68,28 @@ function SideBar() {
         <h6 className="text-lg sm:text-2xl font-bold text-[#452372]">Bacala</h6>
       </NavLink>
       <div className="hidden sm:block">
+        <div className="flex items-center justify-start  gap-2 my-1 py-1  ">
+          {isFetching || isLoading ? (
+            <ClipLoader
+              color="#5b2fe0"
+              size={35}
+              className="w-10 h-10 m-4 rounded-full"
+            />
+          ) : userDetails ? (
+            <img
+              src={userDetails.avatar}
+              alt="avatar"
+              className="w-10 h-10 m-4 rounded-full border-2 border-[#5b2fe0]"
+              onClick={() => setMenuBox(!menuBox)}
+            />
+          ) : (
+            <CircleUserRound
+              className="m-4"
+              onClick={() => setMenuBox(!menuBox)}
+            />
+          )}
+          <span className="font-semibold text-sm pr-2">{`${userDetails.fullName}`}</span>
+        </div>
         {menu.map((tab, i) => {
           return (
             <NavLink
@@ -86,6 +108,19 @@ function SideBar() {
             </NavLink>
           );
         })}
+        <div
+          className="flex items-center justify-start  gap-2 my-1 py-1 sm:pl-12 "
+          onClick={handleLogout}
+        >
+          {isLogoutLoading ? (
+            <BeatLoader color="#5b2fe0" size={15} className="mx-auto" />
+          ) : (
+            <>
+              <LogOutIcon className="mx-2 text-red-500" />
+              <span className="font-semibold text-xs pr-2">Log out</span>
+            </>
+          )}
+        </div>
       </div>
       {/* small device popup */}
       <div className="sm:hidden">
@@ -99,7 +134,7 @@ function SideBar() {
           <img
             src={userDetails.avatar}
             alt="avatar"
-            className="w-10 h-10 m-4 rounded-full border-2 border-[#5b2fe0]"
+            className="w-8 h-8 m-4 rounded-full border-2 border-[#5b2fe0]"
             onClick={() => setMenuBox(!menuBox)}
           />
         ) : (

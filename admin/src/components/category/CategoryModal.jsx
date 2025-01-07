@@ -137,7 +137,7 @@ export default function CategoryModal({
             )}
           </div>
           <button className="w-full bg-[#45237277] p-2 rounded-md">
-            {editCategory ? "Add" : "Edit"} Category
+            {!editCategory ? "Add" : "Edit"} Category
           </button>
         </form>
       </div>
