@@ -19,7 +19,7 @@ router.route("/register").post(upload.single("avatar"), registerUser);
 router.route("/login").post(loginUser);
 
 // secured routes
-router.route("/refresh-token").post(verifyJWT, refreshAccessToken);
+router.route("/refresh-token").post(refreshAccessToken);
 router.route("/logout").post(verifyJWT, logout);
 router.route("/change-password").post(verifyJWT, changePassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);

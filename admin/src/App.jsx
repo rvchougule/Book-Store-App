@@ -3,14 +3,14 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+import { useAuthContext } from "./hooks/useAuthContext";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./components/Dashboard";
-import { useAuthContext } from "./hooks/useAuthContext";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import ListItems from "./components/books/ListItems";
 import Orders from "./components/Orders";
 import Category from "./components/category/Category";
