@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import { TbShoppingBagPlus } from "react-icons/tb";
-function Card({ book }) {
+function Card({ book, style }) {
   return (
-    <div>
+    <div className={`${style ? style : ""}`}>
       <img src={book.image} alt="" className="p-6 rounded-3xl bg-primary" />
       <div className="p-3">
         <div className="flexBetween">

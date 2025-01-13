@@ -1,6 +1,9 @@
 import { CiSearch } from "react-icons/ci";
 import { LuSettings2 } from "react-icons/lu";
 import { categories } from "../assets/data";
+
+import { books } from "../assets/data";
+import BooksPagination from "../components/BooksPagination";
 function Shop() {
   return (
     <>
@@ -33,8 +36,35 @@ function Shop() {
               })}
             </div>
           </div>
+        </section>
 
-          {/*  */}
+        {/* Books List */}
+        <section>
+          <div className="flexBetween gap-4">
+            <div className="">
+              <h2 className="h2">
+                Our{" "}
+                <span className="text-secondary !font-light">Books List</span>
+              </h2>
+              <p className="">
+                From timeless classics to modern masterpieces, find the <br />{" "}
+                perfect read for every moment
+              </p>
+            </div>
+            <div className="">
+              <label htmlFor="sort">Sort By:</label>
+              <select
+                name="sort"
+                id="sort"
+                className="mx-1 px-2 py-2 rounded-sm text-gray-30 bg-primary"
+              >
+                <option value="">Relevant</option>
+                <option value="low">Low</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+          <BooksPagination books={books} />
         </section>
       </section>
     </>
