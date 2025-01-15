@@ -6,10 +6,9 @@ import "swiper/css/pagination";
 
 // import required modules
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import { books } from "../assets/data";
 import Card from "./Card";
 
-function Slider() {
+function Slider({ books }) {
   return (
     <div className="relative mt-12 p-4 ">
       <Swiper
@@ -40,7 +39,7 @@ function Slider() {
         modules={[Autoplay, Pagination, Navigation]}
         className="mySwiper"
       >
-        {books?.splice(0, 7).map((book) => (
+        {books?.map((book) => (
           <SwiperSlide key={book._id}>
             <Card book={book} />
           </SwiperSlide>

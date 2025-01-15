@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import Card from "./Card.jsx";
-function BooksPagination({ books }) {
-  const [currentPage, setCurrentPage] = useState(1);
+function BooksPagination({ books, currentPage, setCurrentPage }) {
   const [currentBooks, setCurrentBooks] = useState();
   const booksPerPage = 10;
 

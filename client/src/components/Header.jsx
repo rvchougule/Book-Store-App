@@ -83,12 +83,15 @@ function Header() {
             className="text-2xl xl:hidden cursor-pointer"
             onClick={() => setOpen(!open)}
           />
-          <div className="flexCenter relative text-xl bg-[#452372] text-white rounded-full p-2">
+          <NavLink
+            to="/cart"
+            className="flexCenter relative text-xl bg-[#452372] text-white rounded-full p-2"
+          >
             <RiShoppingBag4Line />
             <span className="absolute -top-2 -right-1 bg-white text-black rounded-full text-sm px-1 border-1">
               0
             </span>
-          </div>
+          </NavLink>
           <NavLink className="btn-outline flexCenter !border-none gap-x-2 ">
             <span className="">Login</span>
             <RiUserLine />

@@ -4,7 +4,7 @@ import { FOOTER_CONTACT_INFO, FOOTER_LINKS, SOCIALS } from "../assets/data";
 
 const Footer = () => {
   return (
-    <footer className="mb-4 max-padd-container">
+    <footer className="mb-4 max-padd-container" id="footer">
       <div className="rounded-tr-3xl rounded-tl-3xl pt-12 xl:pt-20 pb-8">
         <h3 className="h3">Discover books that ignite your imagination</h3>
         <p>

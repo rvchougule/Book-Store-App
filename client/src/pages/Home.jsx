@@ -2,6 +2,12 @@ import { Link } from "react-router";
 import { assets, Features } from "../assets/data";
 import Slider from "../components/Slider";
 import { TbTruckReturn } from "react-icons/tb";
+import {
+  useGetNewArrivalsQuery,
+  useGetPopularBooksQuery,
+} from "../store/bookSlice";
+
+import BeatLoader from "react-spinners/BeatLoader";
 
 const bookStoreFeatures = [
   {
@@ -22,6 +28,20 @@ const bookStoreFeatures = [
 ];
 
 function Home() {
+  const {
+    data: newArrivals,
+    isError,
+    isLoading,
+    isFetching,
+  } = useGetNewArrivalsQuery();
+
+  const {
+    data: popularBooks,
+    isError: isErrorInPopularBooks,
+    isLoading: isLoadingInPopularBooks,
+    isFetching: isFetchingInPopularBooks,
+  } = useGetPopularBooksQuery();
+
   return (
     <>
       <section id="hero-container" className="bg-primary py-20 xl:py-36">
@@ -70,7 +90,20 @@ function Home() {
           From timeless classics to modern masterpieces, find the <br /> perfect
           read for every moment
         </p>
-        <Slider />
+        {isError ? (
+          <div>Something got wrong </div>
+        ) : isLoading || isFetching ? (
+          <BeatLoader
+            color="#452372"
+            loading="true"
+            size={50}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+            className="py-16 w-full text-center"
+          />
+        ) : (
+          <Slider books={newArrivals?.data?.books} />
+        )}
       </section>
 
       <section className="bg-primary">
@@ -114,7 +147,20 @@ function Home() {
           From timeless classics to modern masterpieces, find the <br /> perfect
           read for every moment
         </p>
-        <Slider />
+        {isErrorInPopularBooks ? (
+          <div>Something got wrong </div>
+        ) : isLoadingInPopularBooks || isFetchingInPopularBooks ? (
+          <BeatLoader
+            color="#452372"
+            loading="true"
+            size={50}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+            className="py-16 w-full text-center"
+          />
+        ) : (
+          <Slider books={popularBooks?.data?.books} />
+        )}
       </section>
 
       <section className="bg-primary py-16">

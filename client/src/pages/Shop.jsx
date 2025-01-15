@@ -2,9 +2,21 @@ import { CiSearch } from "react-icons/ci";
 import { LuSettings2 } from "react-icons/lu";
 import { categories } from "../assets/data";
 
-import { books } from "../assets/data";
 import BooksPagination from "../components/BooksPagination";
+import { useGetBooksQuery } from "../store/bookSlice";
+import BeatLoader from "react-spinners/BeatLoader";
+import { useState } from "react";
 function Shop() {
+  const [query, setQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const {
+    data: QueryBooks,
+    isError: isErrorInQueryBooks,
+    isLoading: isLoadingInQueryBook,
+    isFetching: isFetchingInQueryBooks,
+  } = useGetBooksQuery({ page: currentPage, query, limit: "30" });
+
+  console.log(QueryBooks);
   return (
     <>
       <section className="max-padd-container pt-24">
@@ -15,6 +27,10 @@ function Shop() {
               type="text"
               placeholder="search here..."
               className="w-full ring-0 outline-none py-2 bg-transparent px-2"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+              }}
             />
             <LuSettings2 className="text-xl font-extrabold" />
           </div>
@@ -64,7 +80,24 @@ function Shop() {
               </select>
             </div>
           </div>
-          <BooksPagination books={books} />
+          {isErrorInQueryBooks ? (
+            <div>Something got wrong </div>
+          ) : isLoadingInQueryBook || isFetchingInQueryBooks ? (
+            <BeatLoader
+              color="#452372"
+              loading="true"
+              size={50}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+              className="py-16 w-full text-center"
+            />
+          ) : (
+            <BooksPagination
+              books={QueryBooks.data.books}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+          )}
         </section>
       </section>
     </>

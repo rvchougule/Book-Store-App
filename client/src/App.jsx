@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Shop from "./pages/Shop";
 import { Contact } from "lucide-react";
 import Layout from "./pages/Layout";
+import Cart from "./pages/Cart";
 export default function App() {
   //
 
@@ -30,6 +31,10 @@ export default function App() {
             {
               path: "/contact",
               element: <Contact />,
+            },
+            {
+              path: "/cart",
+              element: <Cart />,
             },
           ],
         },

@@ -361,6 +361,9 @@ const getAllBooks = asyncHandler(async (req, res) => {
     ],
   };
 
+  // Calculate the skip value for pagination
+  // const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+
   // Define the aggregation pipeline
   let pipeline = [
     // Match books based on the query filter
@@ -441,13 +444,21 @@ const getAllBooks = asyncHandler(async (req, res) => {
         [sortBy]: Number(sortType), // Use dynamic sorting field and type
       },
     },
+    // Skip the documents based on the calculated value
+    // {
+    //   $skip: skip,
+    // },
+    // // Limit the documents to the specified count
+    // {
+    //   $limit: parseInt(limit, 10),
+    // },
   ];
 
   // Execute the pipeline with pagination
   try {
     const options = {
-      page: parseInt(page, 10), // Convert page to integer
-      limit: parseInt(limit, 10), // Convert limit to integer
+      // page: parseInt(page, 10),
+      // limit: parseInt(limit, 10),
       customLabels: {
         totalDocs: "totalBooks",
         docs: "books",
