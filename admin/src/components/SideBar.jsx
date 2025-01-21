@@ -88,7 +88,7 @@ function SideBar() {
               onClick={() => setMenuBox(!menuBox)}
             />
           )}
-          <span className="font-semibold text-sm pr-2">{`${userDetails.fullName}`}</span>
+          <span className="font-semibold text-sm pr-2">{`${userDetails?.fullName}`}</span>
         </div>
         {menu.map((tab, i) => {
           return (
@@ -153,7 +153,7 @@ function SideBar() {
             </div>
             <div className="flex items-center justify-start  gap-2 my-1 py-1 sm:pl-12 ">
               <CircleUserRound className="mx-2" />
-              <span className="font-semibold text-xs pr-2">{`${userDetails.fullName?.substring(
+              <span className="font-semibold text-xs pr-2">{`${userDetails?.fullName?.substring(
                 0,
                 16
               )}...`}</span>

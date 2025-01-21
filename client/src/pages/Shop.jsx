@@ -5,10 +5,11 @@ import { categories } from "../assets/data";
 import BooksPagination from "../components/BooksPagination";
 import { useGetBooksQuery } from "../store/bookSlice";
 import BeatLoader from "react-spinners/BeatLoader";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 function Shop() {
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState("");
   const {
     data: QueryBooks,
     isError: isErrorInQueryBooks,
@@ -16,7 +17,21 @@ function Shop() {
     isFetching: isFetchingInQueryBooks,
   } = useGetBooksQuery({ page: currentPage, query, limit: "30" });
 
-  console.log(QueryBooks);
+  const filteredBooks = useMemo(() => {
+    if (!QueryBooks?.data?.books) return [];
+
+    const books = QueryBooks.data.books;
+
+    switch (sortBy) {
+      case "low":
+        return [...books].sort((a, b) => a.price - b.price);
+      case "high":
+        return [...books].sort((a, b) => b.price - a.price);
+      default:
+        return books;
+    }
+  }, [sortBy, QueryBooks?.data?.books]);
+
   return (
     <>
       <section className="max-padd-container pt-24">
@@ -73,6 +88,8 @@ function Shop() {
                 name="sort"
                 id="sort"
                 className="mx-1 px-2 py-2 rounded-sm text-gray-30 bg-primary"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
               >
                 <option value="">Relevant</option>
                 <option value="low">Low</option>
@@ -93,7 +110,7 @@ function Shop() {
             />
           ) : (
             <BooksPagination
-              books={QueryBooks.data.books}
+              books={filteredBooks}
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
             />

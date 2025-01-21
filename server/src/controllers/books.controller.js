@@ -457,8 +457,8 @@ const getAllBooks = asyncHandler(async (req, res) => {
   // Execute the pipeline with pagination
   try {
     const options = {
-      // page: parseInt(page, 10),
-      // limit: parseInt(limit, 10),
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
       customLabels: {
         totalDocs: "totalBooks",
         docs: "books",

@@ -9,6 +9,8 @@ import { RiUserLine } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import { CgMenuLeft } from "react-icons/cg";
 import { FaRegWindowClose } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { selectTotalQuantity } from "../store/cartSliceReducer";
 
 const menu = [
   {
@@ -30,6 +32,7 @@ const menu = [
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const cartBooksCount = useSelector(selectTotalQuantity);
 
   // Handle scroll event
   useEffect(() => {
@@ -89,7 +92,7 @@ function Header() {
           >
             <RiShoppingBag4Line />
             <span className="absolute -top-2 -right-1 bg-white text-black rounded-full text-sm px-1 border-1">
-              0
+              {cartBooksCount || 0}
             </span>
           </NavLink>
           <NavLink className="btn-outline flexCenter !border-none gap-x-2 ">

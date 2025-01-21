@@ -1,8 +1,10 @@
 import CartCard from "../components/CartCard";
-import { books } from "../assets/data";
 import { Link } from "react-router";
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
 function Cart() {
+  const cartBooks = useSelector((state) => state.cart);
+
   // Footer bg color setup
   useEffect(() => {
     const footerContainer = document.getElementById("footer");
@@ -18,7 +20,7 @@ function Cart() {
         Cart <span className="text-secondary !font-light">List</span>
       </h2>
       <div className="">
-        {books.slice(1, 4).map((book) => {
+        {cartBooks.cart.map((book) => {
           return <CartCard key={book._id} book={book} />;
         })}
       </div>
