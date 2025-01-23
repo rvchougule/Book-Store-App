@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { useSignUpMutation } from "../store/authSlice";
 
-import signUpValidation from "../validation/signUpValidation";
+import { signUpValidation } from "../validation/signUpValidation";
 
 const fields = {
   fullName: "",
@@ -29,7 +29,7 @@ export default function SignUp() {
     setErrors({ ...fields });
 
     if (file) {
-      console.log(file);
+      // console.log(file);
       setFormData((prevState) => ({ ...prevState, [name]: file }));
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -47,12 +47,20 @@ export default function SignUp() {
     signUpValidation
       .validate(formData, { abortEarly: false })
       .then(() => {
-        signUp(formData)
+        const userData = new FormData();
+
+        userData.append("fullName", formData.fullName);
+        userData.append("username", formData.username);
+        userData.append("password", formData.password);
+        userData.append("email", formData.email);
+        userData.append("avatar", formData.avatar);
+
+        signUp(userData)
           .then((res) => {
             if (res.error) {
               toast.error(res?.error?.data?.message);
             } else {
-              toast.success(res?.data?.data?.message);
+              toast.success(res?.data?.message);
               setErrors({ ...fields });
               navigate("/login");
             }

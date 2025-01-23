@@ -1,6 +1,6 @@
 import * as Yup from "yup";
 
-const signUpValidation = Yup.object().shape({
+export const signUpValidation = Yup.object().shape({
   fullName: Yup.string()
     .required("Full name is required")
     .min(2, "Full name must be at least 2 characters")
@@ -41,4 +41,24 @@ const signUpValidation = Yup.object().shape({
     ),
 });
 
-export default signUpValidation;
+export const loginValidation = Yup.object().shape({
+  username: Yup.string()
+    .required("Username is required")
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username cannot exceed 20 characters")
+    .matches(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores"
+    ),
+
+  password: Yup.string()
+    .required("Password is required")
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[0-9]/, "Password must contain at least one number")
+    .matches(
+      /[!@#$%^&*]/,
+      "Password must contain at least one special character"
+    ),
+});

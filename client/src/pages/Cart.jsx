@@ -2,8 +2,14 @@ import CartCard from "../components/CartCard";
 import { Link } from "react-router";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
+import { totalCartBooksPrice } from "../store/cartSliceReducer";
+import { CURRENCY_TYPE, SHIPPING_FEES } from "../constants";
+import { useAuthContext } from "../hooks/useAuthContext";
 function Cart() {
   const cartBooks = useSelector((state) => state.cart);
+  const cartTotal = useSelector(totalCartBooksPrice);
+
+  const { accessToken } = useAuthContext();
 
   // Footer bg color setup
   useEffect(() => {
@@ -33,19 +39,33 @@ function Cart() {
         <div className="flex flex-col gap-4 py-4">
           <div className="flexBetween border-b-2">
             <span className="h5">SubTotal:</span>{" "}
-            <span className="text-gray-30 font-bold">$150</span>
+            <span className="text-gray-30 font-bold">
+              {CURRENCY_TYPE}
+              {cartTotal}
+            </span>
           </div>
           <div className="flexBetween border-b-2 ">
             <span className="h5">Shipping Fee:</span>{" "}
-            <span className="text-gray-30 font-bold">$5</span>
+            <span className="text-gray-30 font-bold">
+              {CURRENCY_TYPE}
+              {SHIPPING_FEES}
+            </span>
           </div>
           <div className="flexBetween border-b-2">
             <span className="h5">Total:</span>{" "}
-            <span className="text-gray-30 font-bold">$155</span>
+            <span className="text-gray-30 font-bold">
+              {CURRENCY_TYPE}
+              {cartTotal + SHIPPING_FEES}
+            </span>
           </div>
         </div>
         <div className="py-4">
-          <Link className="btn-secondaryOne ">Proceed to Checkout</Link>
+          <Link
+            to={accessToken ? "/place-order" : "/login"}
+            className="btn-secondaryOne "
+          >
+            Proceed to Checkout
+          </Link>
         </div>
       </div>
     </section>

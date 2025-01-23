@@ -5,15 +5,16 @@ const auth = api.injectEndpoints({
   endpoints: (builder) => ({
     getCurrentUser: builder.query({
       query: () => ({
-        url: "/user/current-user",
+        url: "/users/current-user",
         method: "GET",
         timeout: 5000,
       }),
+      transformErrorResponse: (res) => console.error(res),
       providesTags: ["auth"],
     }),
     signUp: builder.mutation({
       query: (user) => ({
-        url: "/user/register",
+        url: "/users/register",
         method: "POST",
         body: user,
         timeout: 5000,
@@ -21,7 +22,7 @@ const auth = api.injectEndpoints({
     }),
     login: builder.mutation({
       query: (user) => ({
-        url: "/user/login",
+        url: "/users/login",
         method: "POST",
         body: user,
         timeout: 5000,
@@ -30,14 +31,14 @@ const auth = api.injectEndpoints({
     }),
     logout: builder.mutation({
       query: () => ({
-        url: "/user/logout",
+        url: "/users/logout",
         method: "POST",
         timeout: 5000,
       }),
     }),
     refreshToken: builder.mutation({
       query: (body) => ({
-        url: "/user/refresh-token",
+        url: "/users/refresh-token",
         method: "POST",
         body: body,
         timeout: 5000,

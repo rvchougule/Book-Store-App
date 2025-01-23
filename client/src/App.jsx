@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -9,6 +9,7 @@ import Shop from "./pages/Shop";
 import { Contact } from "lucide-react";
 import Layout from "./pages/Layout";
 import Cart from "./pages/Cart";
+import PlaceOrder from "./pages/PlaceOrder";
 export default function App() {
   //
 
@@ -35,6 +36,10 @@ export default function App() {
             {
               path: "/cart",
               element: <Cart />,
+            },
+            {
+              path: "/place-order",
+              element: <PlaceOrder />,
             },
           ],
         },

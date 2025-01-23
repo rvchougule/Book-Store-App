@@ -11,6 +11,7 @@ import { CgMenuLeft } from "react-icons/cg";
 import { FaRegWindowClose } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { selectTotalQuantity } from "../store/cartSliceReducer";
+import { useGetCurrentUserQuery } from "../store/authSlice";
 
 const menu = [
   {
@@ -33,6 +34,13 @@ function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const cartBooksCount = useSelector(selectTotalQuantity);
+  const {
+    data: currentUser,
+    isLoading: isCurrentUserLoading,
+    isError: isErrorInCurrentUser,
+    isFetching: isFetchingInCurrentUser,
+  } = useGetCurrentUserQuery();
+  console.log(currentUser);
 
   // Handle scroll event
   useEffect(() => {
@@ -95,10 +103,19 @@ function Header() {
               {cartBooksCount || 0}
             </span>
           </NavLink>
-          <NavLink className="btn-outline flexCenter !border-none gap-x-2 ">
-            <span className="">Login</span>
-            <RiUserLine />
-          </NavLink>
+          {currentUser ? (
+            <div className="w-12 rounded-full overflow-hidden ring-2 ring-secondaryOne">
+              <img src={currentUser?.data?.avatar} alt="" />
+            </div>
+          ) : (
+            <NavLink
+              to="/login"
+              className="btn-outline flexCenter !border-none gap-x-2 "
+            >
+              <span className="">Login</span>
+              <RiUserLine />
+            </NavLink>
+          )}
         </div>
       </div>
 

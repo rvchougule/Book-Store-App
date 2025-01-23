@@ -56,4 +56,11 @@ export const selectTotalQuantity = (state) => {
   return state.cart.cart.reduce((total, book) => total + book.quantity, 0);
 };
 
+export const totalCartBooksPrice = (state) => {
+  return state.cart.cart.reduce(
+    (total, book) => total + book.price * book.quantity,
+    0
+  );
+};
+
 export default cartSlice.reducer;

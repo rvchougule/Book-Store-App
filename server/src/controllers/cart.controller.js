@@ -156,7 +156,8 @@ const addItemToCart = asyncHandler(async (req, res) => {
 
 const updateCartItem = asyncHandler(async (req, res) => {
   const { userId } = req.user; // User ID from authenticated request
-  const { bookId, quantity } = req.body;
+  const { bookId } = req.params;
+  const { quantity } = req.body;
 
   if (!bookId || !quantity) {
     throw new ApiError(400, "Book ID and quantity are required");
@@ -248,4 +249,4 @@ const deleteCartItem = asyncHandler(async (req, res) => {
   }
 });
 
-export { getCartItems, addItemToCart, deleteCartItem };
+export { getCartItems, addItemToCart, updateCartItem, deleteCartItem };

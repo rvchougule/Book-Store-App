@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { useLoginMutation } from "../store/authSlice";
 import { toast } from "react-toastify";
 import { useAuthContext } from "../hooks/useAuthContext";
-import signUpValidation from "../validation/signUpValidation";
+import { loginValidation } from "../validation/signUpValidation";
 
 const fields = {
   username: "",
@@ -27,8 +27,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    signUpValidation
+    loginValidation
       .validate(formData, { abortEarly: false })
       .then(() => {
         login(formData)
