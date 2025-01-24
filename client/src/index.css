@@ -124,6 +124,10 @@
     @apply mx-auto  max-w-[1440px] max-h-[1440px];
   }
 
+  .grey-input-order {
+    @apply w-full border-[1px] placeholder:text-sm border-gray-20 px-3 py-1 rounded-sm bg-transparent mb-2;
+  }
+
   /* flex */
   .flexCenter {
     @apply flex items-center justify-center;

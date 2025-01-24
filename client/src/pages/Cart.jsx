@@ -25,6 +25,7 @@ function Cart() {
       <h2 className="h2">
         Cart <span className="text-secondary !font-light">List</span>
       </h2>
+      {/* cart items */}
       <div className="">
         {cartBooks.cart.map((book) => {
           return <CartCard key={book._id} book={book} />;
@@ -62,7 +63,11 @@ function Cart() {
         <div className="py-4">
           <Link
             to={accessToken ? "/place-order" : "/login"}
-            className="btn-secondaryOne "
+            className={`btn-secondaryOne ${
+              cartBooks.cart.length == 0
+                ? "!bg-gray-20 !text-gray-30 pointer-events-none"
+                : "pointer-events-auto"
+            } `}
           >
             Proceed to Checkout
           </Link>

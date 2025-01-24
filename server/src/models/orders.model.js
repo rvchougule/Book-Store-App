@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+
 const orderSchema = new Schema(
   {
     user: {
@@ -31,18 +32,31 @@ const orderSchema = new Schema(
       default: "pending",
     },
     shippingAddress: {
-      type: String,
+      type: {},
       required: true,
     },
     paymentMethod: {
       type: String,
-      enum: ["credit_card", "paypal", "cash_on_delivery"],
+      enum: ["credit_card", "paypal", "COD"],
       required: true,
     },
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],
       default: "pending",
+    },
+    paymentDetails: {
+      transactionId: {
+        type: String,
+      },
+      cardDetails: {
+        cardBrand: {
+          type: String, // e.g., "Visa", "MasterCard"
+        },
+        cardNumberLast4Digit: {
+          type: String, // Last 4 digits of the card
+        },
+      },
     },
   },
   {

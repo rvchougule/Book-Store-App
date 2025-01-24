@@ -9,7 +9,6 @@ const auth = api.injectEndpoints({
         method: "GET",
         timeout: 5000,
       }),
-      transformErrorResponse: (res) => console.error(res),
       providesTags: ["auth"],
     }),
     signUp: builder.mutation({

@@ -12,6 +12,7 @@ import { FaRegWindowClose } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { selectTotalQuantity } from "../store/cartSliceReducer";
 import { useGetCurrentUserQuery } from "../store/authSlice";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const menu = [
   {
@@ -37,10 +38,8 @@ function Header() {
   const {
     data: currentUser,
     isLoading: isCurrentUserLoading,
-    isError: isErrorInCurrentUser,
     isFetching: isFetchingInCurrentUser,
   } = useGetCurrentUserQuery();
-  console.log(currentUser);
 
   // Handle scroll event
   useEffect(() => {
@@ -103,7 +102,16 @@ function Header() {
               {cartBooksCount || 0}
             </span>
           </NavLink>
-          {currentUser ? (
+          {isCurrentUserLoading || isFetchingInCurrentUser ? (
+            <ClipLoader
+              color="#452372"
+              loading="true"
+              size={35}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+              className=""
+            />
+          ) : currentUser ? (
             <div className="w-12 rounded-full overflow-hidden ring-2 ring-secondaryOne">
               <img src={currentUser?.data?.avatar} alt="" />
             </div>

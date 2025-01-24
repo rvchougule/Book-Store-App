@@ -8,6 +8,7 @@ import {
 } from "../store/bookSlice";
 
 import BeatLoader from "react-spinners/BeatLoader";
+import useRefreshToken from "../hooks/useRefreshToken";
 
 const bookStoreFeatures = [
   {
@@ -28,6 +29,7 @@ const bookStoreFeatures = [
 ];
 
 function Home() {
+  useRefreshToken();
   const {
     data: newArrivals,
     isError,
