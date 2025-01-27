@@ -9,6 +9,8 @@ import * as yup from "yup";
 import { useCreateOrderMutation } from "../store/ordersSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
+import useFooterBgColor from "../hooks/useFooterBgColor";
+
 const fields = {
   firstName: "",
   lastName: "",
@@ -136,14 +138,7 @@ function PlaceOrder() {
   };
 
   // Footer bg color setup
-  useEffect(() => {
-    const footerContainer = document.getElementById("footer");
-    footerContainer.style.backgroundColor = "#f8f6fb";
-
-    return () => {
-      footerContainer.style.backgroundColor = "white";
-    };
-  }, []);
+  useFooterBgColor();
   return (
     <form
       className="max-padd-container py-24 bg-primary lg:flex gap-20 "

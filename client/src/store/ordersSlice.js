@@ -3,8 +3,8 @@ const orders = api.injectEndpoints({
   tagTypes: ["Orders"],
   endpoints: (builder) => ({
     getOrders: builder.query({
-      query: () => ({
-        url: `/orders/`,
+      query: ({ page, query, limit }) => ({
+        url: `/orders?page=${page}&limit=${limit}&query=${query}`,
         method: "GET",
         timeout: 5000,
       }),

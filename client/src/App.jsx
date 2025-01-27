@@ -10,6 +10,7 @@ import { Contact } from "lucide-react";
 import Layout from "./pages/Layout";
 import Cart from "./pages/Cart";
 import PlaceOrder from "./pages/PlaceOrder";
+import Orders from "./pages/Orders";
 export default function App() {
   //
 
@@ -40,6 +41,10 @@ export default function App() {
             {
               path: "/place-order",
               element: <PlaceOrder />,
+            },
+            {
+              path: "/orders",
+              element: <Orders />,
             },
           ],
         },

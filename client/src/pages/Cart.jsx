@@ -1,10 +1,10 @@
 import CartCard from "../components/CartCard";
 import { Link } from "react-router";
-import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { totalCartBooksPrice } from "../store/cartSliceReducer";
 import { CURRENCY_TYPE, SHIPPING_FEES } from "../constants";
 import { useAuthContext } from "../hooks/useAuthContext";
+import useFooterBgColor from "../hooks/useFooterBgColor";
 function Cart() {
   const cartBooks = useSelector((state) => state.cart);
   const cartTotal = useSelector(totalCartBooksPrice);
@@ -12,14 +12,7 @@ function Cart() {
   const { accessToken } = useAuthContext();
 
   // Footer bg color setup
-  useEffect(() => {
-    const footerContainer = document.getElementById("footer");
-    footerContainer.style.backgroundColor = "#f8f6fb";
-
-    return () => {
-      footerContainer.style.backgroundColor = "white";
-    };
-  }, []);
+  useFooterBgColor();
   return (
     <section className="max-padd-container py-24 bg-primary">
       <h2 className="h2">

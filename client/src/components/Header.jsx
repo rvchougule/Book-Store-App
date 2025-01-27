@@ -31,9 +31,11 @@ const menu = [
     name: "Contact",
   },
 ];
+
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const cartBooksCount = useSelector(selectTotalQuantity);
   const {
     data: currentUser,
@@ -112,7 +114,10 @@ function Header() {
               className=""
             />
           ) : currentUser ? (
-            <div className="w-12 rounded-full overflow-hidden ring-2 ring-secondaryOne">
+            <div
+              className="w-12 rounded-full overflow-hidden ring-2 ring-secondaryOne cursor-pointer"
+              onClick={() => setAvatarMenuOpen(true)}
+            >
               <img src={currentUser?.data?.avatar} alt="" />
             </div>
           ) : (
@@ -126,6 +131,20 @@ function Header() {
           )}
         </div>
       </div>
+
+      {/* avatar popup model menu */}
+      {avatarMenuOpen && (
+        <div className="flex flex-col gap-2 absolute top-16 right-8 w-36 border-2 rounded-lg  bg-primary p-4  ">
+          <NavLink
+            to="/orders"
+            className=""
+            onClick={() => setAvatarMenuOpen(false)}
+          >
+            Orders
+          </NavLink>
+          <span className="">Logout</span>
+        </div>
+      )}
 
       {/* slidebar */}
       {open && (
