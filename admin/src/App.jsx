@@ -12,7 +12,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./components/Dashboard";
 import ListItems from "./components/books/ListItems";
-import Orders from "./components/Orders";
+import Orders from "./components/orders/Orders";
 import Category from "./components/category/Category";
 
 function App() {

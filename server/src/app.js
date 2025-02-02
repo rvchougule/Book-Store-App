@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
+import { stripeWebhook } from "./controllers/orders.controllers.js";
+
 const app = express();
 
 // express middlewares
@@ -11,10 +13,19 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json({ limit: "1mb" }));
+// Stripe Webhook - Needs Raw Body
+app.post(
+  "/api/v1/webhook",
+  express.raw({ type: "application/json" }), // Apply express.raw() only for this route
+  stripeWebhook
+);
+// app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
+
+// JSON Middleware (Applied AFTER Webhook Route)
+app.use(express.json({ limit: "1mb" }));
 
 // routes imports
 import userRouter from "./routers/user.routers.js";
@@ -25,6 +36,7 @@ import cartRouter from "./routers/cart.routers.js";
 import reviewRouter from "./routers/reviews.routers.js";
 import { ApiError } from "./utils/ApiError.js";
 import ordersRouter from "./routers/orders.routers.js";
+
 // routes declaration
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/admin", adminRouter);

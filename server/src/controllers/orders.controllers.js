@@ -3,6 +3,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import mongoose from "mongoose";
+import Stripe from "stripe";
+
+// Stripe connection
+const stripe = new Stripe(process.env.SECRET_KEY);
 
 // Controller to create a new order
 
@@ -43,13 +47,13 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
 });
 
-// Controller to update order status (admin only)
-
 // on complete paymentStatus should be paid
 
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
+
+  console.log(status);
 
   if (!["pending", "completed", "cancelled"].includes(status)) {
     return res.status(400).json(new ApiError(400, "Invalid order status."));
@@ -180,5 +184,183 @@ export const getAllOrders = asyncHandler(async (req, res) => {
       .json(
         new ApiError(500, `Error fetching all orders. error: ${error.message}`)
       );
+  }
+});
+
+// controller for payment checkout
+export const createStripeCheckout = asyncHandler(async (req, res) => {
+  const { books, totalPrice, shippingAddress, paymentMethod } = req.body;
+
+  try {
+    // to pass to metadata
+    const filteredCartBooks = books?.map((book) => {
+      return { book: book._id, quantity: book.quantity };
+    });
+
+    if (!books && books?.length === 0) {
+      console.log("No books");
+      throw new ApiError(401, "No books found");
+    }
+
+    const customer = await stripe.customers.create({
+      metadata: {
+        userId: JSON.stringify(req.user._id),
+        cart: JSON.stringify(filteredCartBooks),
+      },
+    });
+
+    const lineItems = books?.map((book) => ({
+      price_data: {
+        currency: "inr",
+        product_data: {
+          name: book.title,
+          images: [book.thumbnail],
+          metadata: {
+            id: book._id,
+          },
+        },
+        unit_amount: book.price * 100,
+      },
+      quantity: book.quantity,
+    }));
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      shipping_address_collection: {
+        allowed_countries: ["US", "CA", "KE"],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: 0,
+              currency: "inr",
+            },
+            display_name: "Free shipping",
+            // Delivers between 5-7 business days
+            delivery_estimate: {
+              minimum: {
+                unit: "business_day",
+                value: 5,
+              },
+              maximum: {
+                unit: "business_day",
+                value: 7,
+              },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: 1500,
+              currency: "inr",
+            },
+            display_name: "Next day air",
+            // Delivers in exactly 1 business day
+            delivery_estimate: {
+              minimum: {
+                unit: "business_day",
+                value: 1,
+              },
+              maximum: {
+                unit: "business_day",
+                value: 1,
+              },
+            },
+          },
+        },
+      ],
+      phone_number_collection: {
+        enabled: true,
+      },
+      line_items: lineItems,
+      mode: "payment",
+      success_url: `${process.env.REDIRECT_URL}/stripe-success`,
+      cancel_url: `${process.env.REDIRECT_URL}/stripe-cancel`,
+      customer: customer.id,
+      metadata: {
+        data: JSON.stringify({
+          books: filteredCartBooks,
+          totalPrice,
+          shippingAddress,
+          paymentMethod,
+        }),
+      },
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { id: session.id },
+          "Checkout Object create Successfully!"
+        )
+      );
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json(new ApiError(500, "Checkout Error: " + e));
+  }
+});
+
+export const stripeWebhook = asyncHandler(async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+
+  console.log("body", req.body);
+  let data;
+  let eventType;
+
+  if (sig) {
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET // Your webhook secret from Stripe
+      );
+    } catch (err) {
+      console.log(`Webhook Error: ${err.message}`);
+      return res
+        .status(400)
+        .json(new ApiError(400, `Webhook Error: ${err.message}`));
+    }
+    console.log(event);
+    data = event.data.object;
+    eventType = event.type;
+  } else {
+    data = req.body.data.object;
+    eventType = req.body.type;
+  }
+
+  // console.log("data", data);
+  console.log("eventType", eventType);
+
+  try {
+    // Handle the checkout.session.completed event
+    if (eventType === "checkout.session.completed") {
+      stripe.customers
+        .retrieve(data.customer)
+        .then(async (customer) => {
+          try {
+            console.log("customer", customer);
+            console.log("data", data);
+            // CREATE ORDER
+            // createOrder(customer, data);
+          } catch (err) {
+            // console.log(typeof createOrder);
+            console.log(err);
+          }
+        })
+        .catch((err) => console.log(err.message));
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    res.status(200).json(new ApiResponse(200, {}, "Received event"));
+  } catch (err) {
+    console.log(err);
   }
 });

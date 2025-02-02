@@ -11,6 +11,7 @@ import Layout from "./pages/Layout";
 import Cart from "./pages/Cart";
 import PlaceOrder from "./pages/PlaceOrder";
 import Orders from "./pages/Orders";
+import StripeSuccessPage from "./pages/StripeSuccessPage";
 export default function App() {
   //
 
@@ -45,6 +46,13 @@ export default function App() {
             {
               path: "/orders",
               element: <Orders />,
+            },
+            {
+              path: "/stripe-success",
+              element: <StripeSuccessPage />,
+            },
+            {
+              path: "/stripe-cancel",
             },
           ],
         },

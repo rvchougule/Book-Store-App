@@ -6,10 +6,14 @@ import {
 } from "../store/cartSliceReducer";
 import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
-import { useCreateOrderMutation } from "../store/ordersSlice";
+import {
+  useCreateOrderMutation,
+  useCreateStripeOrderMutation,
+} from "../store/ordersSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import useFooterBgColor from "../hooks/useFooterBgColor";
+import { loadStripe } from "@stripe/stripe-js";
 
 const fields = {
   firstName: "",
@@ -73,6 +77,7 @@ function PlaceOrder() {
   const cartBooks = useSelector((state) => state.cart);
   const cartTotal = useSelector(totalCartBooksPrice);
   const [createOrder] = useCreateOrderMutation();
+  const [createStripeOrder] = useCreateStripeOrderMutation();
 
   const [formData, setFormData] = useState({ ...fields });
   const [errors, setErrors] = useState({ ...fields });
@@ -95,37 +100,75 @@ function PlaceOrder() {
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const makePayment = async (order) => {
+    const stripe = await loadStripe(import.meta.env.VITE_API_KEY);
+
+    createStripeOrder(order)
+      .then((res) => {
+        if (res.error) {
+          toast.error(res?.error?.data?.message);
+        } else {
+          const session = res?.data?.data;
+
+          const result = stripe.redirectToCheckout({
+            sessionId: session.id,
+          });
+
+          if (result.error) {
+            console.log(result.error);
+          }
+          // toast.success(res?.data?.message);
+          // setErrors({ ...fields });
+
+          // navigate("/");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error(err);
+      });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     validationSchema
       .validate(formData, { abortEarly: false })
       .then(() => {
-        const order = {
-          books: filteredCartBooks.current,
-          totalPrice: cartTotal,
-          shippingAddress: formData,
-          paymentMethod,
-          paymentDetails: {},
-        };
-
         // Api func
-        createOrder(order)
-          .then((res) => {
-            if (res.error) {
-              toast.error(res?.error?.data?.message);
-            } else {
-              toast.success(res?.data?.message);
-              setErrors({ ...fields });
-              localStorage.removeItem("cart");
-              dispatch(removeCartItems());
-              navigate("/");
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            toast.error(err);
-          });
+        if (paymentMethod === "COD") {
+          const order = {
+            books: filteredCartBooks.current,
+            totalPrice: cartTotal,
+            shippingAddress: formData,
+            paymentMethod,
+            paymentDetails: {},
+          };
+          createOrder(order)
+            .then((res) => {
+              if (res.error) {
+                toast.error(res?.error?.data?.message);
+              } else {
+                toast.success(res?.data?.message);
+                setErrors({ ...fields });
+                localStorage.removeItem("cart");
+                dispatch(removeCartItems());
+                navigate("/");
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              toast.error(err);
+            });
+        } else {
+          const order = {
+            books: cartBooks?.cart,
+            totalPrice: cartTotal,
+            shippingAddress: formData,
+            paymentMethod,
+          };
+          makePayment(order);
+        }
       })
       .catch((err) => {
         console.log(err);

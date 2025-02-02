@@ -19,8 +19,29 @@ const orders = api.injectEndpoints({
       }),
       providesTags: ["Orders"],
     }),
+    createStripeOrder: builder.mutation({
+      query: (body) => ({
+        url: "/orders/create-checkout/",
+        method: "POST",
+        body: body,
+      }),
+      transformErrorResponse: (res) => console.error(res),
+      providesTags: ["Orders"],
+    }),
+    stripeWebhook: builder.mutation({
+      query: () => ({
+        url: "/webhook",
+        method: "POST",
+      }),
+      providesTags: ["Orders"],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetOrdersQuery, useCreateOrderMutation } = orders;
+export const {
+  useGetOrdersQuery,
+  useCreateOrderMutation,
+  useCreateStripeOrderMutation,
+  useStripeWebhookMutation,
+} = orders;
