@@ -7,12 +7,13 @@ import { stripeWebhook } from "./controllers/orders.controllers.js";
 const app = express();
 
 // express middlewares
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN,
+//     credentials: true,
+//   })
+// );
+app.use(cors());
 // Stripe Webhook - Needs Raw Body
 app.post(
   "/api/v1/webhook",
