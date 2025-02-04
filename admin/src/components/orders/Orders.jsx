@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useGetOrdersQuery } from "../../store/orderSlice";
 import ParentOrderCard from "./ParentOrderCard";
+import BeatLoader from "react-spinners/BeatLoader";
 
 function Orders() {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("");
   const {
     data: ordersList,
     isLoading: isOrdersLoading,
     isFetching: isOrdersFetching,
-  } = useGetOrdersQuery();
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("");
+  } = useGetOrdersQuery({ limit: 30, query: query, status: filter });
 
   return (
     <section className="max-padd-container py-12 px-16 bg-primary ">
@@ -24,6 +25,7 @@ function Orders() {
           value={query}
           onChange={(e) => setQuery(e.target.value.trim())}
           className="p-2 border rounded-md  sm:w-[40%]"
+          title="search based on user name, email and the city"
         />
         <select
           value={filter}
@@ -37,11 +39,21 @@ function Orders() {
         </select>
       </div>
 
-      {isOrdersFetching || isOrdersLoading
-        ? "Loading..."
-        : ordersList?.data?.map((order, index) => {
-            return <ParentOrderCard key={index} order={order} />;
-          })}
+      {isOrdersFetching || isOrdersLoading ? (
+        <div className="text-center my-20">
+          <BeatLoader
+            color="#ffbcb1"
+            loading="true"
+            size={50}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+        </div>
+      ) : (
+        ordersList?.data?.orders?.map((order, index) => {
+          return <ParentOrderCard key={index} order={order} />;
+        })
+      )}
     </section>
   );
 }

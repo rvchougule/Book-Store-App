@@ -11,6 +11,14 @@ const auth = api.injectEndpoints({
       }),
       providesTags: ["auth"],
     }),
+    getDashBoardData: builder.query({
+      query: () => ({
+        url: "/admin/",
+        method: "GET",
+        timeout: 5000,
+      }),
+      providesTags: ["auth"],
+    }),
     signUp: builder.mutation({
       query: (user) => ({
         url: "/admin/register",
@@ -50,6 +58,7 @@ const auth = api.injectEndpoints({
 
 export const {
   useGetCurrentUserQuery,
+  useGetDashBoardDataQuery,
   useSignUpMutation,
   useLoginMutation,
   useRefreshTokenMutation,

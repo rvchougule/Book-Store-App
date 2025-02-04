@@ -5,6 +5,8 @@ import { uploadOnCloudinary, deleteInCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 import { Admin as User } from "../models/admin.model.js";
+import { Book } from "../models/books.model.js";
+import { Order } from "../models/orders.model.js";
 
 const generateAccessTokenRefreshToken = async (userId) => {
   const user = await User.findById(userId);
@@ -277,6 +279,60 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Avatar updated successfully"));
+});
+
+// Dashboard COntrollers
+
+export const getDashBoardData = asyncHandler(async (req, res) => {
+  try {
+    // Count total users
+    const totalUsers = await User.countDocuments();
+
+    // Count total books
+    const totalBooks = await Book.countDocuments();
+
+    // Count total orders
+    const totalOrders = await Order.countDocuments();
+
+    // Count total books sold
+    const totalBooksSold = await Order.aggregate([
+      { $unwind: "$books" },
+      {
+        $match: { status: "completed" },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSold: { $sum: "$books.quantity" },
+        },
+      },
+    ]);
+
+    // Count pending orders
+    const pendingOrders = await Order.countDocuments({ status: "pending" });
+
+    // Count completed orders
+    const completedOrders = await Order.countDocuments({ status: "completed" });
+    const data = {
+      totalUsers,
+      totalBooks,
+      totalOrders,
+      totalBooksSold:
+        totalBooksSold.length > 0 ? totalBooksSold[0].totalSold : 0,
+      pendingOrders,
+      completedOrders,
+    };
+    res.status(200).json(new ApiResponse(200, data, "success"));
+  } catch (error) {
+    res
+      .status(500)
+      .json(
+        new ApiError(
+          500,
+          `Error fetching dashboard data, error:${error.message}`
+        )
+      );
+  }
 });
 
 export {

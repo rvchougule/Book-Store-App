@@ -8,11 +8,13 @@ import {
   getAllBooks,
   getBooksByCategory,
   updateBookThumbnail,
+  getMostSellingBook,
 } from "../controllers/books.controller.js";
 import { upload } from "../middlewares/multer.middelware.js";
 import { verifyAdminJWT } from "../middlewares/adminAuth.middleware.js";
 
 const router = Router();
+router.route("/top-book").get(getMostSellingBook);
 router.route("/:bookId").get(getBook);
 
 // todo Changes

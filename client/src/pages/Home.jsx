@@ -5,6 +5,7 @@ import { TbTruckReturn } from "react-icons/tb";
 import {
   useGetNewArrivalsQuery,
   useGetPopularBooksQuery,
+  useGetTopBookQuery,
 } from "../store/bookSlice";
 
 import BeatLoader from "react-spinners/BeatLoader";
@@ -43,6 +44,8 @@ function Home() {
     isLoading: isLoadingInPopularBooks,
     isFetching: isFetchingInPopularBooks,
   } = useGetPopularBooksQuery();
+
+  const { data: topBook } = useGetTopBookQuery();
 
   return (
     <>
@@ -136,7 +139,11 @@ function Home() {
           </div>
           {/* book image */}
           <div className=" xl:mx-24 p-12 xl:p-24  rounded-3xl bg-secondaryOne">
-            <img src={assets.book_1} alt="" className="rounded-lg" />
+            <img
+              src={topBook?.data?.bookDetails?.thumbnail || assets.book_1}
+              alt=""
+              className="rounded-lg min-w-36"
+            />
           </div>
         </div>
       </section>

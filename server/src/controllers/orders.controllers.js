@@ -53,8 +53,6 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
 
-  console.log(status);
-
   if (!["pending", "completed", "cancelled"].includes(status)) {
     return res.status(400).json(new ApiError(400, "Invalid order status."));
   }
@@ -173,17 +171,112 @@ export const getUserOrders = asyncHandler(async (req, res) => {
 // Controller to get all orders (admin view)
 
 export const getAllOrders = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    query = "",
+    status = "",
+    sortBy = "createdAt",
+    sortType = 1,
+  } = req.query;
+
   try {
-    const orders = await Order.find().populate("user books.book");
+    // Build match conditions based on query and status
+    let matchConditions = {};
+    if (query) {
+      matchConditions.$or = [
+        { "user.fullName": { $regex: query, $options: "i" } },
+        { "user.email": { $regex: query, $options: "i" } },
+        { "shippingAddress.city": { $regex: query, $options: "i" } },
+      ];
+    }
+    if (status) {
+      matchConditions.status = status;
+    }
+
+    // Build aggregation pipeline
+    const pipeline = [
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $match: matchConditions,
+      },
+      {
+        $lookup: {
+          from: "books",
+          localField: "books.book",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      {
+        $addFields: {
+          books: {
+            $map: {
+              input: "$books",
+              as: "bookItem",
+              in: {
+                $mergeObjects: [
+                  "$$bookItem",
+                  {
+                    details: {
+                      $arrayElemAt: [
+                        "$bookDetails",
+                        {
+                          $indexOfArray: [
+                            "$bookDetails._id",
+                            "$$bookItem.book",
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          bookDetails: 0, // Remove separate bookDetails field
+        },
+      },
+      {
+        $sort: { [sortBy]: Number(sortType) },
+      },
+    ];
+
+    // Pagination options
+    const options = {
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      customLabels: {
+        totalDocs: "totalOrders",
+        docs: "orders",
+      },
+    };
+
+    // Fetch paginated orders
+    const orders = await Order.aggregatePaginate(
+      Order.aggregate(pipeline),
+      options
+    );
+
     res
       .status(200)
-      .json(new ApiResponse(200, orders, "successfully fetched orders"));
+      .json(new ApiResponse(200, orders, "Successfully fetched orders"));
   } catch (error) {
     res
       .status(500)
-      .json(
-        new ApiError(500, `Error fetching all orders. error: ${error.message}`)
-      );
+      .json(new ApiError(500, `Error fetching orders: ${error.message}`));
   }
 });
 

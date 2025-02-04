@@ -1,21 +1,33 @@
 import { CiSearch } from "react-icons/ci";
 import { LuSettings2 } from "react-icons/lu";
-import { categories } from "../assets/data";
 
 import BooksPagination from "../components/BooksPagination";
 import { useGetBooksQuery } from "../store/bookSlice";
 import BeatLoader from "react-spinners/BeatLoader";
 import { useMemo, useState } from "react";
+import { useGetCategoriesQuery } from "../store/categorySlice";
 function Shop() {
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [category, setCategory] = useState("");
   const [sortBy, setSortBy] = useState("");
+  const {
+    data: categories,
+    isFetching: isCategoriesFetching,
+    isLoading: isCategoriesLoading,
+  } = useGetCategoriesQuery();
+
   const {
     data: QueryBooks,
     isError: isErrorInQueryBooks,
     isLoading: isLoadingInQueryBook,
     isFetching: isFetchingInQueryBooks,
-  } = useGetBooksQuery({ page: currentPage, query, limit: "30" });
+  } = useGetBooksQuery({
+    page: currentPage,
+    query,
+    limit: "30",
+    categoryId: category,
+  });
 
   const filteredBooks = useMemo(() => {
     if (!QueryBooks?.data?.books) return [];
@@ -32,10 +44,17 @@ function Shop() {
     }
   }, [sortBy, QueryBooks?.data?.books]);
 
+  const ClearFilters = () => {
+    setQuery("");
+    setCategory("");
+    setSortBy("");
+  };
+
   return (
     <>
       <section className="max-padd-container pt-24">
         <section>
+          {/* search */}
           <div className="flex items-center justify-center rounded-full px-4  bg-primary max-w-[600px]">
             <CiSearch className="text-xl font-extrabold" />
             <input
@@ -47,24 +66,40 @@ function Shop() {
                 setQuery(e.target.value);
               }}
             />
-            <LuSettings2 className="text-xl font-extrabold" />
+            <LuSettings2
+              className="text-xl font-extrabold cursor-pointer"
+              title="clear filters"
+              onClick={ClearFilters}
+            />
           </div>
           {/* categories */}
           <div className="py-8">
             <h4 className="h4">Categories:</h4>
             <div className="flexCenter sm:flexStart gap-8 flex-wrap">
-              {categories.map((category, i) => {
-                return (
-                  <div className=" cursor-pointer" key={i}>
-                    <img
-                      src={category.image}
-                      alt=""
-                      className="w-20 p-4 rounded-full bg-primary"
-                    />
-                    <h5 className="text-center pt-2">{category.name}</h5>
-                  </div>
-                );
-              })}
+              {isCategoriesFetching || isCategoriesLoading ? (
+                <BeatLoader
+                  color="#452372"
+                  loading="true"
+                  size={50}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                  className="py-16 w-full text-center"
+                />
+              ) : (
+                categories?.data?.map((item) => {
+                  return (
+                    <div
+                      key={item._id}
+                      className={`px-3 py-2  rounded-full font-semibold cursor-pointer  ${
+                        category === item._id ? "bg-secondaryOne" : "bg-primary"
+                      }`}
+                      onClick={() => setCategory(item._id)}
+                    >
+                      {item.name}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </section>

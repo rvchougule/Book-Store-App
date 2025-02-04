@@ -16,7 +16,11 @@ function BooksPagination({ books, currentPage, setCurrentPage }) {
 
   return (
     <div className="py-4 ">
-      <div className="flexBetween  flex-wrap gap-2">
+      <div
+        className={`${
+          currentBooks?.length < 10 ? "flex gap-12" : "flexBetween"
+        }  flex-wrap gap-2`}
+      >
         {currentBooks?.map((book) => {
           return <Card key={book._id} book={book} style=" md:w-1/4 xl:w-1/6" />;
         })}

@@ -5,6 +5,8 @@ import { uploadOnCloudinary, deleteInCloudinary } from "../utils/cloudinary.js";
 
 import { Book } from "../models/books.model.js";
 import fs from "fs";
+import { Order } from "../models/orders.model.js";
+import mongoose from "mongoose";
 
 // create book
 const publishBook = asyncHandler(async (req, res) => {
@@ -216,9 +218,6 @@ const updateBookThumbnail = asyncHandler(async (req, res) => {
   }
 });
 
-// update book quantity
-const updateBookQuantity = asyncHandler(async (req, res) => {});
-
 // delete book
 const deleteBook = asyncHandler(async (req, res) => {
   const { bookId } = req.params;
@@ -343,9 +342,10 @@ const getBook = asyncHandler(async (req, res) => {
   }
 });
 
-// get books
+// get all books
 const getAllBooks = asyncHandler(async (req, res) => {
   const {
+    categoryId,
     page = 1,
     limit = 10,
     query = "",
@@ -353,50 +353,45 @@ const getAllBooks = asyncHandler(async (req, res) => {
     sortType = 1,
   } = req.query;
 
-  // Build the match filter for a fuzzy search on the book title or other fields
-  let matchFilter = {
-    $or: [
-      { title: { $regex: query, $options: "i" } }, // Case-insensitive search in the title
-      { author: { $regex: query, $options: "i" } }, // Case-insensitive search in author
-    ],
-  };
+  let matchFilter = {};
+  if (query) {
+    matchFilter.$or = [
+      { title: { $regex: query, $options: "i" } },
+      { author: { $regex: query, $options: "i" } },
+    ];
+  }
 
-  // Calculate the skip value for pagination
-  // const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+  // Validate and add category filter separately
+  if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+    matchFilter.category = { $in: [new mongoose.Types.ObjectId(categoryId)] };
+  }
 
-  // Define the aggregation pipeline
   let pipeline = [
-    // Match books based on the query filter
-    {
-      $match: matchFilter,
-    },
-    // Lookup reviews and populate the user for each review
+    { $match: matchFilter },
     {
       $lookup: {
-        from: "reviews", // Collection for reviews
-        localField: "_id", // Book's _id
-        foreignField: "book", // Book field in reviews
+        from: "reviews",
+        localField: "_id",
+        foreignField: "book",
         as: "book_reviews",
       },
     },
     {
       $lookup: {
-        from: "users", // Collection for users
-        localField: "book_reviews.user", // User reference in reviews
+        from: "users",
+        localField: "book_reviews.user",
         foreignField: "_id",
         as: "review_users",
       },
     },
-    // Lookup categories and populate the category names
     {
       $lookup: {
-        from: "categories", // Collection for categories
-        localField: "category", // Book's category field
-        foreignField: "_id", // Category's _id
+        from: "categories",
+        localField: "category",
+        foreignField: "_id",
         as: "category_details",
       },
     },
-    // Add fields for populated data and map ObjectId references to documents
     {
       $addFields: {
         reviews: {
@@ -425,12 +420,11 @@ const getAllBooks = asyncHandler(async (req, res) => {
           $map: {
             input: "$category_details",
             as: "category",
-            in: "$$category.name", // Map category ObjectId to category name
+            in: "$$category.name",
           },
         },
       },
     },
-    // Clean up unnecessary fields
     {
       $project: {
         book_reviews: 0,
@@ -438,23 +432,13 @@ const getAllBooks = asyncHandler(async (req, res) => {
         category_details: 0,
       },
     },
-    // Sort by the specified field and type
     {
       $sort: {
-        [sortBy]: Number(sortType), // Use dynamic sorting field and type
+        [sortBy]: Number(sortType),
       },
     },
-    // Skip the documents based on the calculated value
-    // {
-    //   $skip: skip,
-    // },
-    // // Limit the documents to the specified count
-    // {
-    //   $limit: parseInt(limit, 10),
-    // },
   ];
 
-  // Execute the pipeline with pagination
   try {
     const options = {
       page: parseInt(page, 10),
@@ -588,6 +572,54 @@ const getBooksByCategory = asyncHandler(async (req, res) => {
   }
 });
 
+const getMostSellingBook = asyncHandler(async (req, res) => {
+  try {
+    const mostSellingBook = await Order.aggregate([
+      { $unwind: "$books" }, // Unwind the books array to count individual book sales
+      {
+        $group: {
+          _id: "$books.book",
+          totalSold: { $sum: "$books.quantity" },
+        },
+      },
+      {
+        $lookup: {
+          from: "books",
+          localField: "_id",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      { $unwind: "$bookDetails" }, // Extract book details
+      { $sort: { totalSold: -1 } }, // Sort by highest sales
+      { $limit: 1 }, // Get the top-selling book
+    ]);
+
+    if (!mostSellingBook.length) {
+      return res
+        .status(404)
+        .json(new ApiError(404, "No sales data available for books"));
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          mostSellingBook[0],
+          "Most selling book fetched successfully"
+        )
+      );
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json(
+        new ApiError(500, `Error fetching most selling book: ${error.message}`)
+      );
+  }
+});
+
 export {
   publishBook,
   updateBook,
@@ -596,4 +628,5 @@ export {
   getBook,
   getAllBooks,
   getBooksByCategory,
+  getMostSellingBook,
 };

@@ -42,11 +42,19 @@ function OrderCard({ book, status, paymentMethod, date }) {
           <div className="flex items-center justify-end gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
-                status === "pending" ? "bg-secondary" : "bg-green-600"
+                status === "pending"
+                  ? "bg-secondary"
+                  : status === "cancelled"
+                  ? "bg-red-600"
+                  : "bg-green-600"
               }`}
             ></div>
             <p className="">
-              {status === "pending" ? "Order Placed" : "Completed"}
+              {status === "pending"
+                ? "Order Placed"
+                : status === "cancelled"
+                ? "Cancelled"
+                : "Completed"}
             </p>
           </div>
           <button className="bg-secondaryOne py-1 px-2 cursor-pointer rounded-full medium-14">

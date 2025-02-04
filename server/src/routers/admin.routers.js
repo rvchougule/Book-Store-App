@@ -9,6 +9,7 @@ import {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
+  getDashBoardData,
 } from "../controllers/admin.controller.js";
 import { upload } from "../middlewares/multer.middelware.js";
 import { verifyAdminJWT } from "../middlewares/adminAuth.middleware.js";
@@ -27,5 +28,8 @@ router.route("/update-account").patch(verifyAdminJWT, updateAccountDetails);
 router
   .route("/update-avatar")
   .patch(verifyAdminJWT, upload.single("avatar"), updateUserAvatar);
+
+// dashboard routes
+router.route("/").get(verifyAdminJWT, getDashBoardData);
 
 export default router;

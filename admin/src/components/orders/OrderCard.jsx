@@ -2,7 +2,7 @@
 import { CURRENCY_TYPE } from "../../constants.js";
 
 function OrderCard({ book }) {
-  const bookInfo = book?.book;
+  const bookInfo = book?.details;
 
   return (
     <div className="flex items-center justify-between gap-4 rounded-lg px-2 py-2 w-full my-4 bg-white">

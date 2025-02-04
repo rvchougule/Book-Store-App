@@ -18,9 +18,9 @@ function Orders() {
       </h3>
       {isOrdersFetching || isOrdersLoading
         ? "Loading..."
-        : ordersList?.data?.orders?.map((order) => {
+        : ordersList?.data?.orders?.map((order, index) => {
             return (
-              <>
+              <div key={index}>
                 <h5 className="h5">
                   {new Date(order.createdAt).toDateString()}
                 </h5>
@@ -35,7 +35,7 @@ function Orders() {
                     />
                   );
                 })}
-              </>
+              </div>
             );
           })}
     </section>
