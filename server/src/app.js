@@ -13,7 +13,13 @@ const app = express();
 //     credentials: true,
 //   })
 // );
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://book-store-app-kn7w.vercel.app", // Replace with your frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 // Stripe Webhook - Needs Raw Body
 app.post(
   "/api/v1/webhook",
