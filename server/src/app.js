@@ -14,8 +14,8 @@ app.use(
   })
 );
 
-app.get("api/v1/", (req, res) => {
-  return res.send("Hello World!");
+app.get("/api/v1/", (req, res) => {
+  return res.send("bacala-backend-api");
 });
 // Stripe Webhook - Needs Raw Body
 app.post(
