@@ -14,6 +14,9 @@ app.use(
   })
 );
 
+app.get("api/v1/", (req, res) => {
+  return res.send("Hello World!");
+});
 // Stripe Webhook - Needs Raw Body
 app.post(
   "/api/v1/webhook",
