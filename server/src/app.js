@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
 });
 // Stripe Webhook - Needs Raw Body
 app.post(
-  "/api/v1/webhook",
+  "/webhook",
   express.raw({ type: "application/json" }), // Apply express.raw() only for this route
   stripeWebhook
 );
@@ -42,13 +42,13 @@ import { ApiError } from "./utils/ApiError.js";
 import ordersRouter from "./routers/orders.routers.js";
 
 // routes declaration
-app.use("/api/v1/users", userRouter);
-app.use("/api/v1/admin", adminRouter);
-app.use("/api/v1/books", bookRouter);
-app.use("/api/v1/category", categoryRouter);
-app.use("/api/v1/cart", cartRouter);
-app.use("/api/v1/review", reviewRouter);
-app.use("/api/v1/orders", ordersRouter);
+app.use("/users", userRouter);
+app.use("/admin", adminRouter);
+app.use("/books", bookRouter);
+app.use("/category", categoryRouter);
+app.use("/cart", cartRouter);
+app.use("/review", reviewRouter);
+app.use("/orders", ordersRouter);
 
 app.use((err, req, res, next) => {
   if (err instanceof ApiError) {
