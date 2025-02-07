@@ -6,14 +6,14 @@ import { stripeWebhook } from "./controllers/orders.controllers.js";
 
 const app = express();
 
-// express middlewares
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
-  })
-);
-
+// // express middlewares
+// app.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN,
+//     credentials: true,
+//   })
+// );
+app.use(cors());
 app.get("/", (req, res) => {
   return res.send("bacala-backend-api");
 });
