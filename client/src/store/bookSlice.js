@@ -7,6 +7,7 @@ const book = api.injectEndpoints({
         url: `/books?page=${page}&limit=${limit}&query=${query}&categoryId=${categoryId}`,
         method: "GET",
       }),
+      retry: 3,
       providesTags: ["Book"],
     }),
     getNewArrivals: builder.query({
@@ -15,6 +16,7 @@ const book = api.injectEndpoints({
         method: "GET",
         timeout: 5000,
       }),
+      retry: 3,
       providesTags: ["Book"],
     }),
     getTopBook: builder.query({
@@ -22,6 +24,7 @@ const book = api.injectEndpoints({
         url: "/books/top-book",
         method: "GET",
       }),
+      retry: 3,
       providesTags: ["Book"],
     }),
     getPopularBooks: builder.query({
@@ -30,6 +33,7 @@ const book = api.injectEndpoints({
         method: "GET",
         timeout: 5000,
       }),
+      retry: 3,
       providesTags: ["Book"],
     }),
   }),

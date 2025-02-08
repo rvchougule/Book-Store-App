@@ -53,7 +53,9 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
 
-  if (!["pending", "completed", "cancelled"].includes(status)) {
+  if (
+    !["pending", "out_for_delivery", "delivered", "cancelled"].includes(status)
+  ) {
     return res.status(400).json(new ApiError(400, "Invalid order status."));
   }
 
@@ -79,7 +81,7 @@ export const getUserOrders = asyncHandler(async (req, res) => {
     page = 1,
     limit = 10,
     sortBy = "createdAt",
-    sortType = 1,
+    sortType = -1,
   } = req.query;
 
   try {
@@ -146,8 +148,6 @@ export const getUserOrders = asyncHandler(async (req, res) => {
       Order.aggregate(pipeline),
       options
     );
-
-    console.log("Orders fetched:", orders);
 
     // Check if no orders are found
     if (!orders || orders.orders.length === 0) {

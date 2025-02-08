@@ -18,7 +18,7 @@ function BooksPagination({ books, currentPage, setCurrentPage }) {
     <div className="py-4 ">
       <div
         className={`${
-          currentBooks?.length < 10 ? "flex gap-12" : "flexBetween"
+          currentBooks?.length < 10 ? "flex gap-24" : "flexBetween"
         }  flex-wrap gap-2`}
       >
         {currentBooks?.map((book) => {

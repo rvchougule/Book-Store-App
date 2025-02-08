@@ -80,7 +80,8 @@ function ParentOrderCard({ order }) {
                 onChange={handleChangeInOrderStatus}
               >
                 <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
+                <option value="out_for_delivery">Out for Delivery</option>
+                <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
               </select>
             </p>

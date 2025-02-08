@@ -28,7 +28,7 @@ const orderSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "completed", "cancelled"],
+      enum: ["pending", "out_for_delivery", "delivered", "cancelled"],
       default: "pending",
     },
     shippingAddress: {

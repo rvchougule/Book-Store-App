@@ -39,27 +39,31 @@ function OrderCard({ book, status, paymentMethod, date }) {
 
         {/* Second part */}
         <div className="w-full  flex flex-col xs:flex-row items-center justify-end  gap-2">
-          <div className="flex items-center justify-end gap-2">
+          <div className="md:w-1/3 flex items-center justify-center gap-2 py-1 px-2 cursor-pointer rounded-full medium-14">
             <div
               className={`w-2 h-2 rounded-full ${
                 status === "pending"
                   ? "bg-secondary"
+                  : status === "out_for_delivery"
+                  ? "bg-red-400"
                   : status === "cancelled"
                   ? "bg-red-600"
                   : "bg-green-600"
-              }`}
+              } `}
             ></div>
             <p className="">
               {status === "pending"
                 ? "Order Placed"
+                : status === "out_for_delivery"
+                ? "Out for Delivery"
                 : status === "cancelled"
                 ? "Cancelled"
-                : "Completed"}
+                : "Delivered"}
             </p>
           </div>
-          <button className="bg-secondaryOne py-1 px-2 cursor-pointer rounded-full medium-14">
+          {/* <button className="bg-secondaryOne py-1 px-2 cursor-pointer rounded-full medium-14">
             Track Order
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

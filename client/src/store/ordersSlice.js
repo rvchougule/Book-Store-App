@@ -8,6 +8,7 @@ const orders = api.injectEndpoints({
         method: "GET",
         timeout: 5000,
       }),
+      retry: 3,
       providesTags: ["Orders"],
     }),
     createOrder: builder.mutation({
