@@ -8,6 +8,7 @@ const category = api.injectEndpoints({
         method: "GET",
         timeout: 5000,
       }),
+      retry: 3,
       providesTags: ["Category"],
     }),
     addCategory: builder.mutation({

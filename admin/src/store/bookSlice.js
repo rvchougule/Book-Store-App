@@ -8,6 +8,7 @@ const book = api.injectEndpoints({
         method: "GET",
         timeout: 5000,
       }),
+      retry: 3,
       providesTags: ["Book"],
     }),
     addBook: builder.mutation({
