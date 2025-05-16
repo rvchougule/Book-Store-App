@@ -9,12 +9,13 @@ import { RiUserLine } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import { CgMenuLeft } from "react-icons/cg";
 import { FaRegWindowClose } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectTotalQuantity } from "../store/cartSliceReducer";
 import { useGetCurrentUserQuery, useLogoutMutation } from "../store/authSlice";
 import ClipLoader from "react-spinners/ClipLoader";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { toast } from "react-toastify";
+import { api } from "../store/apiSlice";
 
 const menu = [
   {
@@ -39,7 +40,6 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const cartBooksCount = useSelector(selectTotalQuantity);
-  const navigate = useNavigate();
   const {
     data: currentUser,
     isLoading: isCurrentUserLoading,
@@ -47,6 +47,7 @@ function Header() {
   } = useGetCurrentUserQuery();
   const [logout] = useLogoutMutation();
   const { ClearStates } = useAuthContext();
+  const dispatch = useDispatch();
 
   // Logout user
   const handleLogout = async () => {
@@ -58,7 +59,9 @@ function Header() {
           const data = res?.data;
           ClearStates();
           toast.success(data?.message);
-          navigate("/");
+          dispatch(
+            api.util.updateQueryData("getCurrentUser", undefined, () => null)
+          );
         }
       })
       .catch((err) => {
@@ -166,7 +169,13 @@ function Header() {
           >
             Orders
           </NavLink>
-          <span className="" onClick={handleLogout}>
+          <span
+            className=""
+            onClick={() => {
+              handleLogout();
+              setAvatarMenuOpen(false);
+            }}
+          >
             Logout
           </span>
         </div>
