@@ -3,7 +3,7 @@ import { assets } from "../assets/data";
 import { TbHomeFilled } from "react-icons/tb";
 import { IoLibrary } from "react-icons/io5";
 import { IoMailOpen } from "react-icons/io5";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { RiShoppingBag4Line } from "react-icons/ri";
 import { RiUserLine } from "react-icons/ri";
 import { useEffect, useState } from "react";
@@ -11,8 +11,10 @@ import { CgMenuLeft } from "react-icons/cg";
 import { FaRegWindowClose } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { selectTotalQuantity } from "../store/cartSliceReducer";
-import { useGetCurrentUserQuery } from "../store/authSlice";
+import { useGetCurrentUserQuery, useLogoutMutation } from "../store/authSlice";
 import ClipLoader from "react-spinners/ClipLoader";
+import { useAuthContext } from "../hooks/useAuthContext";
+import { toast } from "react-toastify";
 
 const menu = [
   {
@@ -37,11 +39,33 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const cartBooksCount = useSelector(selectTotalQuantity);
+  const navigate = useNavigate();
   const {
     data: currentUser,
     isLoading: isCurrentUserLoading,
     isFetching: isFetchingInCurrentUser,
   } = useGetCurrentUserQuery();
+  const [logout] = useLogoutMutation();
+  const { ClearStates } = useAuthContext();
+
+  // Logout user
+  const handleLogout = async () => {
+    logout()
+      .then((res) => {
+        if (res.error) {
+          toast.error(res?.error?.data?.message);
+        } else {
+          const data = res?.data;
+          ClearStates();
+          toast.success(data?.message);
+          navigate("/");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error(err);
+      });
+  };
 
   // Handle scroll event
   useEffect(() => {
@@ -116,7 +140,7 @@ function Header() {
           ) : currentUser ? (
             <div
               className="w-12 rounded-full overflow-hidden ring-2 ring-secondaryOne cursor-pointer"
-              onClick={() => setAvatarMenuOpen(true)}
+              onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
             >
               <img src={currentUser?.data?.avatar} alt="" />
             </div>
@@ -134,7 +158,7 @@ function Header() {
 
       {/* avatar popup model menu */}
       {avatarMenuOpen && (
-        <div className="flex flex-col gap-2 absolute top-16 right-8 w-36 border-2 rounded-lg  bg-primary p-4  ">
+        <div className="flex flex-col gap-2 absolute top-16 right-8 w-36 border-2 rounded-lg  bg-primary p-4 cursor-pointer ">
           <NavLink
             to="/orders"
             className=""
@@ -142,7 +166,9 @@ function Header() {
           >
             Orders
           </NavLink>
-          <span className="">Logout</span>
+          <span className="" onClick={handleLogout}>
+            Logout
+          </span>
         </div>
       )}
 
